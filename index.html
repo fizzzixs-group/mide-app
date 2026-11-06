@@ -11796,7 +11796,7 @@ const App = {
         const cond = root.EXTRA.conditionOf(mp);
         const cls = cond.key === 'good' ? 'ok' : cond.key === 'average' ? 'warn' : 'bad';
         return '<div class="stock-item" data-act="open-phone" data-id="' + mp.id + '">' +
-          '<div class="stock-top"><div class="thumb">' + thumbHTML(mm) + '</div>' +
+          '<div class="stock-top"><div class="thumb"><div class="svg-wrap photo">' + (root.PHOTO ? root.PHOTO.ph(mm.id) : '') + '</div></div>' +
           '<div class="stock-info"><div class="nm">' + esc(mm.name) + ' ' + mp.storage + ' ГБ</div>' +
           '<div class="sub">' + esc(mp.color || '') + ' · ' + esc(cond.name) + '</div>' +
           '<div class="val">Сейчас стоит ≈ ' + money(root.Engine.playerValue(mp)) + '</div>' +
@@ -11816,7 +11816,7 @@ const App = {
           const cond = root.EXTRA.conditionOf(x);
           const cls = cond.key === 'good' ? 'ok' : cond.key === 'average' ? 'warn' : 'bad';
           return '<div class="stock-item" data-act="open-phone" data-id="' + x.id + '">' +
-            '<div class="stock-top"><div class="thumb">' + thumbHTML(m) + '</div>' +
+            '<div class="stock-top"><div class="thumb"><div class="svg-wrap photo">' + (root.PHOTO ? root.PHOTO.ph(m.id) : '') + '</div></div>' +
             '<div class="stock-info"><div class="nm">' + (s.mainPhoneId === x.id ? '<span class="main-badge">★ основной</span> ' : '') + esc(m.name) + ' ' + x.storage + ' ГБ</div>' +
             '<div class="sub">' + esc(x.color || '') + '</div>' +
             '<div class="val">≈ ' + money(root.Engine.playerValue(x)) + '</div>' +
