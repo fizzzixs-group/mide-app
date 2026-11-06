@@ -8217,6 +8217,11 @@ window.DESK_PHOTO = [];
   const ADMIN_PASS = 'kR7#mQ2$vX9!pL4@nB8^wT1&zC6*hJ3%fD5_sG0+YgA';
   let mode = 'list';
   let boxRef = null;
+  let autoTimer = null;
+
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
 
   /* ---------- мелкие помощники ---------- */
   function esc(s) {
@@ -8513,6 +8518,7 @@ window.DESK_PHOTO = [];
   }
 
   async function renderList(box) {
+    stopAuto();
     boxRef = box;
     mode = 'list';
     box.innerHTML = '<div class="prof-page">' +
@@ -8570,15 +8576,63 @@ window.DESK_PHOTO = [];
       '<div class="ldb-head-t">Таблица лидеров<span>топ-50 · Telegram</span></div></div>' +
       '<div class="ldb-hero">' +
       '<div class="ldb-hero-l">Твоё место</div>' +
-      '<div class="ldb-hero-n">#' + place + '</div>' +
-      '<div class="ldb-hero-s">из ' + Math.max(total, 1) + ' игроков</div>' +
-      '<div class="ldb-hero-cap">' + money(meRow.capital) + '<span>капитал</span></div>' +
+      '<div class="ldb-hero-n" id="lb-place">#' + place + '</div>' +
+      '<div class="ldb-hero-s" id="lb-total">из ' + Math.max(total, 1) + ' игроков</div>' +
+      '<div class="ldb-hero-cap" id="lb-cap">' + money(meRow.capital) + '<span>капитал</span></div>' +
       '</div>' +
-      '<div class="ldb-board">' + rows + '</div>' +
+      '<div class="ldb-board" id="lb-board">' + rows + '</div>' +
       '<div class="ldb-note">Капитал — это деньги и стоимость склада. Нажми на игрока, чтобы открыть профиль. Нажми на значок — увидишь, что он значит.</div>' +
       '</div>';
     box.innerHTML = html;
     wireBadges(box);
+    autoTimer = setInterval(refreshBoard, 2000);
+  }
+
+  async function refreshBoard() {
+    if (mode !== 'list' || !boxRef) { stopAuto(); return; }
+    if (!root.App || root.App.view !== 'log' || !root.App.lbOpen) { stopAuto(); return; }
+    var u = tgUser();
+    if (!u) return;
+    var st = root.App && root.App.state;
+    var capNow = capital(st);
+    if (!cache.my || capNow !== cache.my.capital || Date.now() - (cache.lastSync || 0) > 15000) {
+      try { await sync(st); cache.lastSync = Date.now(); } catch (e) { }
+    }
+    var top = [], total = 0, above = 0;
+    try {
+      var res = await Promise.all([
+        fetchTop(),
+        countRows(),
+        countRows('&capital=gt.' + ((cache.my && cache.my.capital) || 0))
+      ]);
+      top = res[0] || [];
+      total = res[1] || 0;
+      above = res[2] || 0;
+    } catch (e) { return; }
+    var idx = top.findIndex(function (x) { return String(x.tg_id) === String(u.id); });
+    var place = idx >= 0 ? idx + 1 : above + 1;
+    var meRow = cache.my || {
+      tg_id: u.id, name: u.name, capital: capital(st), deals: 0,
+      uid: (st && st.uid) || '', badge: null
+    };
+    var rows;
+    if (!top.length) {
+      rows = '<div class="ldb-empty">Пока пусто. Ты будешь первым в рейтинге.</div>';
+    } else {
+      rows = top.map(function (x, i) {
+        return rowHTML(x, i + 1, String(x.tg_id) === String(u.id));
+      }).join('');
+      if (idx < 0) rows += '<div class="ldb-sep">Моё место</div>' + rowHTML(meRow, place, true);
+    }
+    var board = document.getElementById('lb-board');
+    if (board) board.innerHTML = rows;
+    var hn = document.getElementById('lb-place');
+    if (hn) hn.textContent = '#' + place;
+    var hs = document.getElementById('lb-total');
+    if (hs) hs.textContent = 'из ' + Math.max(total, 1) + ' игроков';
+    var hc = document.getElementById('lb-cap');
+    if (hc) hc.innerHTML = money(meRow.capital) + '<span>капитал</span>';
+    wireBadges(boxRef);
   }
 
   /* ---------- вид: профиль игрока ---------- */
@@ -8619,6 +8673,7 @@ window.DESK_PHOTO = [];
   }
 
   async function renderUser(box, tgId) {
+    stopAuto();
     boxRef = box;
     mode = 'user';
     box.innerHTML = '<div class="prof-page">' +
@@ -8677,6 +8732,7 @@ window.DESK_PHOTO = [];
     root.App.go('log');
   }
   function close() {
+    stopAuto();
     if (!root.App) return;
     root.App.lbOpen = false;
     root.App.go('log');
@@ -8832,7 +8888,7 @@ window.DESK_PHOTO = [];
     if (root.App && root.App.state && tgUser()) {
       try { sync(root.App.state); } catch (e) { }
     }
-  }, 60000);
+  }, 5000);
 
   root.Leaderboard = {
     open: open,
