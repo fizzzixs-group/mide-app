@@ -3674,6 +3674,7 @@ html.glass-on .switch.on::before{ animation-name:swWaveBlue; }
 
 </style>
 <script>try{if(localStorage.getItem('mide.glass')==='on')document.documentElement.classList.add('glass-on');}catch(e){}</script>
+<script>window.__mideErr='';window.addEventListener('error',function(e){try{window.__mideErr=(e.message||'')+(e.lineno?' @'+e.lineno:'');}catch(x){}});</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
@@ -8876,8 +8877,27 @@ const App = {
       }
       this.bind();
       this.render();
+      this.guardRender();
+      if (location.hash === '#profile') setTimeout(() => { App.closeModal(); App.go('profile'); }, 400);
       if (fresh || !this.state.mode) this.modeModal(fresh);
       else if (!this.state.tutorialDone) this.showIntro();
+    },
+
+    guardRender() {
+      setTimeout(() => {
+        if (this.view !== 'feed') return;
+        const f = document.getElementById('view-feed');
+        if (!f) return;
+        if (f.innerHTML && f.innerHTML.trim()) return;
+        try { this.renderView(); } catch (e) { }
+        if (f.innerHTML && f.innerHTML.trim()) return;
+        const msg = (window.__mideErr || '').replace(/[<>&]/g, function (c) {
+          return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c];
+        });
+        f.innerHTML = '<div style="padding:28px 18px;text-align:center;font-size:13px;line-height:1.6;color:var(--av-muted)">' +
+          'Лента не загрузилась.' + (msg ? '<br><span style="font-size:11px">' + msg + '</span>' : '') +
+          '<br><br><button class="btn primary" onclick="location.reload()">Обновить</button></div>';
+      }, 1200);
     },
 
     /* ---------- панель отладки ---------- */
