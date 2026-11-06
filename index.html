@@ -3528,8 +3528,8 @@ html.glass-on .modal{
 
 .ldb-hero{
   position:relative; overflow:hidden; border-radius:18px; padding:17px 18px;
-  color:#fff; background:linear-gradient(135deg,#0aa2f5 0%,#5b6cf5 52%,#7c5cff 100%);
-  box-shadow:0 14px 34px -18px rgba(20,70,190,.75);
+  color:#fff; background:linear-gradient(135deg,#0aa2f5 0%,#0077c8 62%,#0062a8 100%);
+  box-shadow:0 14px 34px -18px rgba(10,100,170,.65);
 }
 .ldb-hero::after{
   content:""; position:absolute; width:190px; height:190px; right:-55px; top:-95px; border-radius:50%;
@@ -3593,6 +3593,8 @@ html.glass-on .modal{
   font-style:normal; font-weight:800; font-size:14px; color:#fff;
   text-shadow:0 1px 4px rgba(0,0,0,.38);
 }
+.wave-ava.photo{ background:var(--av-sub,#eef1f5); }
+.wave-ava.photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 @keyframes waveSpin{ to{ transform:rotate(360deg); } }
 
 /* значки */
@@ -3628,13 +3630,13 @@ html.glass-on .modal{
 /* кнопка в журнале */
 .ldb-open{
   width:100%; display:flex; align-items:center; gap:12px; padding:13px 14px;
-  background:linear-gradient(135deg,rgba(10,162,245,.11),rgba(124,92,255,.13));
+  background:linear-gradient(135deg,rgba(10,162,245,.10),rgba(10,162,245,.03));
   border:1px solid var(--av-line,#e6e9ee); border-radius:16px; text-align:left;
 }
 .ldb-open:active{ transform:scale(.99); }
 .ldb-open-ic{
   width:38px; height:38px; flex:0 0 38px; border-radius:12px; display:grid; place-items:center;
-  background:linear-gradient(135deg,#0aa2f5,#7c5cff); color:#fff;
+  background:linear-gradient(135deg,#0aa2f5,#0077c8); color:#fff;
 }
 .ldb-open-t{ flex:1; min-width:0; }
 .ldb-open-t b{ display:block; font-size:13.5px; font-weight:750; color:var(--av-ink,#0d0f12); }
@@ -8254,7 +8256,26 @@ window.DESK_PHOTO = [];
     var u = t.initDataUnsafe && t.initDataUnsafe.user;
     if (!u || !u.id) return null;
     var name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Игрок';
-    return { id: u.id, name: name };
+    return {
+      id: u.id,
+      name: name,
+      username: u.username || '',
+      photo: u.photo_url || ''
+    };
+  }
+
+  function applyTgProfile(state) {
+    if (!state) return null;
+    var u = tgUser();
+    if (!u) return null;
+    if (!state.profile) {
+      state.profile = { name: u.name, avatar: 0, color: 0, city: 'Москва', about: '', reviews: [] };
+    }
+    var p = state.profile;
+    p.name = u.name;
+    p.username = u.username;
+    if (u.photo) p.photo = u.photo;
+    return p;
   }
 
   function capital(state) {
@@ -8289,14 +8310,22 @@ window.DESK_PHOTO = [];
     var clean = name.replace(/[^A-Za-zА-Яа-яЁё0-9]/g, '');
     var ch = (clean[0] || '?').toUpperCase();
     var h = hues(row ? (row.tg_id || row.uid || name) : name);
+    if (row && row.photo_url) {
+      return '<span class="wave-ava photo' + (big ? ' ldb-pava' : '') + '">' +
+        '<img src="' + esc(row.photo_url) + '" alt="" loading="lazy"></span>';
+    }
     return '<span class="wave-ava' + (big ? ' ldb-pava' : '') + '" style="--h1:' + h.h1 + ';--h2:' + h.h2 + ';--h3:' + h.h3 + '">' +
       '<i></i><b></b><em>' + esc(ch) + '</em></span>';
   }
 
+  function badgeKeys(badge) {
+    return String(badge || '').split(',').map(function (s) { return s.trim(); }).filter(function (k) { return !!BADGES[k]; });
+  }
   function badgeChip(badge) {
-    var b = BADGES[badge];
-    if (!b) return '';
-    return '<span class="bdg" data-badge="' + badge + '"><img src="' + b.file + '" alt="' + esc(b.title) + '"></span>';
+    return badgeKeys(badge).map(function (k) {
+      var b = BADGES[k];
+      return '<span class="bdg" data-badge="' + k + '"><img src="' + b.file + '" alt="' + esc(b.title) + '"></span>';
+    }).join('');
   }
 
   /* ---------- всплывающая подсказка значка ---------- */
@@ -8353,7 +8382,7 @@ window.DESK_PHOTO = [];
     return isNaN(n) ? 0 : n;
   }
   async function fetchTop() {
-    return fetchJson(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals,uid,badge,best_deal,main_phone,created_at&order=capital.desc&limit=50');
+    return fetchJson(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals,uid,badge,best_deal,main_phone,created_at,username,photo_url&order=capital.desc&limit=50');
   }
   async function countRows(filter) {
     var r = await fetch(SB_URL + '/rest/v1/scores?select=tg_id&limit=1' + (filter || ''), {
@@ -8393,6 +8422,8 @@ window.DESK_PHOTO = [];
       best_deal: Math.round(state.stats.bestDeal || 0),
       main_phone: mainPhoneName(state),
       uid: state.uid,
+      username: u.username || '',
+      photo_url: u.photo || '',
       updated_at: new Date().toISOString()
     };
     var headers = Object.assign({ 'Prefer': 'return=representation' }, HDR);
@@ -8433,7 +8464,7 @@ window.DESK_PHOTO = [];
       avatar(x, false) +
       '<span class="ldb-main">' +
       '<span class="ldb-name"><b>' + esc(x.name || 'Игрок') + '</b>' + badgeChip(x.badge) + (isMe ? '<i>ты</i>' : '') + '</span>' +
-      '<span class="ldb-sub">' + esc(x.uid || '—') + ' · ' + (x.deals || 0) + ' сд.</span>' +
+      '<span class="ldb-sub">' + (x.username ? '@' + esc(x.username) : esc(x.uid || '—')) + ' · ' + (x.deals || 0) + ' сд.</span>' +
       '</span>' +
       '<span class="ldb-cap">' + money(x.capital) + '<span>капитал</span></span>' +
       '</button>';
@@ -8555,7 +8586,7 @@ window.DESK_PHOTO = [];
       '<div class="ldb-pcard">' +
       avatar(row, true) +
       '<div class="ldb-pname">' + esc(row.name || 'Игрок') + '</div>' +
-      '<div class="ldb-puid">' + esc(row.uid || '—') + '</div>' +
+      '<div class="ldb-puid">' + (row.username ? '@' + esc(row.username) + ' · ' : '') + esc(row.uid || '—') + '</div>' +
       '<div class="ldb-pbadges">' + (badgeChip(row.badge) || '') + '</div>' +
       (place ? '<div class="ldb-place">Место ' + place + ' в рейтинге</div>' : '') +
       '</div>' +
@@ -8624,12 +8655,12 @@ window.DESK_PHOTO = [];
   /* ---------- админ-панель ---------- */
   function adminPanel() {
     var keys = Object.keys(BADGES);
-    var selected = null;
+    var selected = [];
     var found = null;
 
     root.App.modal(
       '<h3>Админ-панель</h3>' +
-      '<div class="sub">Панель владельца игры. Введи UID игрока и выдай ему значок.</div>' +
+      '<div class="sub">Панель владельца игры. Введи UID игрока и выдай значки — можно несколько сразу.</div>' +
       '<div class="field"><label>UID игрока</label>' +
       '<input id="adm-uid" type="text" placeholder="#BBB111BBB" maxlength="10" autocomplete="off" spellcheck="false"></div>' +
       '<div class="btn-row"><button class="btn" id="adm-find" style="flex:1">Найти игрока</button></div>' +
@@ -8653,15 +8684,16 @@ window.DESK_PHOTO = [];
     function mark() {
       document.querySelectorAll('#adm-badges [data-adm]').forEach(function (b) {
         var val = b.dataset.adm === 'none' ? null : b.dataset.adm;
-        b.classList.toggle('on', val === selected || (val === null && !selected));
+        b.classList.toggle('on', val === null ? selected.length === 0 : selected.indexOf(val) >= 0);
       });
     }
     function showFound() {
       if (!found) { foundBox.innerHTML = ''; return; }
+      var titles = badgeKeys(found.badge).map(function (k) { return BADGES[k].title; });
       foundBox.innerHTML = '<div class="adm-found">' +
         '<b>' + esc(found.name || 'Игрок') + '</b><br>' +
-        '<span class="muted">' + esc(found.uid || '—') + ' · капитал ' + money(found.capital) + '</span><br>' +
-        '<span class="muted">Значок: ' + (found.badge && BADGES[found.badge] ? BADGES[found.badge].title : 'нет') + '</span>' +
+        '<span class="muted">' + (found.username ? '@' + esc(found.username) + ' · ' : '') + esc(found.uid || '—') + ' · капитал ' + money(found.capital) + '</span><br>' +
+        '<span class="muted">Значки: ' + (titles.length ? esc(titles.join(', ')) : 'нет') + '</span>' +
         '</div>';
     }
     inp.addEventListener('input', function () {
@@ -8681,16 +8713,22 @@ window.DESK_PHOTO = [];
       }
       if (!found) {
         foundBox.innerHTML = '<div class="adm-found">Игрок с таким UID не найден.</div>';
-        selected = null;
+        selected = [];
         return;
       }
-      selected = found.badge || null;
+      selected = badgeKeys(found.badge);
       showFound();
       mark();
     };
     document.querySelectorAll('#adm-badges [data-adm]').forEach(function (b) {
       b.onclick = function () {
-        selected = b.dataset.adm === 'none' ? null : b.dataset.adm;
+        var val = b.dataset.adm === 'none' ? null : b.dataset.adm;
+        if (val === null) {
+          selected = [];
+        } else {
+          var i = selected.indexOf(val);
+          if (i >= 0) selected.splice(i, 1); else selected.push(val);
+        }
         mark();
       };
     });
@@ -8704,14 +8742,14 @@ window.DESK_PHOTO = [];
         var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
           method: 'PATCH',
           headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
-          body: JSON.stringify({ badge: selected })
+          body: JSON.stringify({ badge: selected.length ? selected.join(',') : null })
         });
         if (!r.ok) throw new Error('http ' + r.status);
-        found.badge = selected;
+        found.badge = selected.length ? selected.join(',') : null;
         showFound();
         mark();
-        if (cache.my && String(cache.my.tg_id) === String(found.tg_id)) cache.my.badge = selected;
-        root.App.toast(selected ? 'Значок выдан' : 'Значок убран', 'good');
+        if (cache.my && String(cache.my.tg_id) === String(found.tg_id)) cache.my.badge = found.badge;
+        root.App.toast(selected.length ? 'Значки выданы' : 'Значки убраны', 'good');
         if (root.App.view === 'profile' && root.App.renderProfile) root.App.renderProfile();
       } catch (e) {
         root.App.toast('Не удалось сохранить значок', 'bad');
@@ -8739,6 +8777,7 @@ window.DESK_PHOTO = [];
     user: tgUser,
     capital: capital,
     ensureUid: ensureUid,
+    applyTgProfile: applyTgProfile,
     profileBadgeHTML: profileBadgeHTML,
     refreshMine: refreshMine,
     adminPanel: adminPanel,
@@ -8831,7 +8870,10 @@ const App = {
       this.load();
       const fresh = !this.state;
       if (!this.state) this.state = E.newGame('casual');
-      if (root.Leaderboard) root.Leaderboard.ensureUid(this.state);
+      if (root.Leaderboard) {
+        root.Leaderboard.ensureUid(this.state);
+        root.Leaderboard.applyTgProfile(this.state);
+      }
       this.bind();
       this.render();
       if (fresh || !this.state.mode) this.modeModal(fresh);
@@ -11697,6 +11739,7 @@ const App = {
     const box = $('#view-profile');
     if (!box) return;
     const s = this.state;
+    if (root.Leaderboard) root.Leaderboard.applyTgProfile(s);
     const p = root.EXTRA.profile(s);
     const r = root.EXTRA.rating(s);
     const stars = (n) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
@@ -11710,37 +11753,50 @@ const App = {
       '<div class="avatar" id="prof-avatar" style="' +
       (p.photo ? 'background:url(' + p.photo + ') center/cover no-repeat' : 'background:' + root.EXTRA.AVATAR_COLORS[p.color]) + '">' +
       (p.photo ? '' : root.EXTRA.AVATARS[p.avatar]) + '</div>' +
-      '<div class="prof-name"><b>' + esc(p.name) + '</b><span>' + esc(p.city) + '</span></div>' +
+      '<div class="prof-name"><b>' + esc(p.name) + '</b><span>' + esc(p.username ? '@' + p.username : p.city) + '</span></div>' +
       '<div class="prof-rate">' + (r.count ? r.avg + ' ★' : '—') + '<span>' + r.count + ' отзывов</span></div>' +
       '</div>' +
       (root.Leaderboard ? root.Leaderboard.profileBadgeHTML() : '') +
-      '<div class="prof-about">' + esc(p.about) + '</div>' +
-      '<div class="prof-main">' + (function () {
-        const mp = root.Engine.mainPhone(s);
-        if (!mp) return '<span class="pm-txt">★ Основной телефон не выбран — без него нельзя звонить и писать</span>';
-        const mm = root.Engine.MODELS_BY_ID[mp.modelId] || {};
-        const pic = root.PHOTO ? root.PHOTO.ph(mm.id) : '';
-        return '<div class="pm-pic">' + pic + '</div>' +
-          '<div class="pm-txt">★ Основной телефон<br><b>' + esc(mm.name) + ' ' + mp.storage + ' ГБ</b></div>';
-      })() + '</div>' +
       '</div>' +
 
       '<div class="prof-card">' +
-      '<div class="prof-h">Редактировать профиль</div>' +
-      '<div class="field"><label>Имя</label><input id="inp-name" type="text" maxlength="24" value="' + esc(p.name) + '"></div>' +
-      '<div class="field"><label>Город</label><input id="inp-city" type="text" maxlength="24" value="' + esc(p.city) + '"></div>' +
-      '<div class="field"><label>О себе</label><input id="inp-about" type="text" maxlength="90" value="' + esc(p.about) + '"></div>' +
-      '<div class="tiny muted">Аватар</div><div class="avatar-row" id="avatar-row">' +
-      (p.photo
-        ? '<img class="av-photo' + (p.photo ? ' on' : '') + '" id="av-photo" src="' + p.photo + '" alt="">'
-        : '') +
+      '<div class="prof-h">Основной телефон</div>' +
+      (function () {
+        const mp = root.Engine.mainPhone(s);
+        if (!mp) return '<div class="tiny muted">Основной телефон не выбран.</div>';
+        const mm = root.Engine.MODELS_BY_ID[mp.modelId] || {};
+        const cond = root.EXTRA.conditionOf(mp);
+        const cls = cond.key === 'good' ? 'ok' : cond.key === 'average' ? 'warn' : 'bad';
+        return '<div class="stock-item" data-act="open-phone" data-id="' + mp.id + '">' +
+          '<div class="stock-top"><div class="thumb">' + thumbHTML(mm) + '</div>' +
+          '<div class="stock-info"><div class="nm">' + esc(mm.name) + ' ' + mp.storage + ' ГБ</div>' +
+          '<div class="sub">' + esc(mp.color || '') + ' · ' + esc(cond.name) + '</div>' +
+          '<div class="val">Сейчас стоит ≈ ' + money(root.Engine.playerValue(mp)) + '</div>' +
+          '<div class="stock-defects"><span class="dtag ' + cls + '">' + esc(cond.name) + '</span>' +
+          (mp.brick ? '<span class="dtag bad">кирпич</span>' : '') + '</div>' +
+          '</div></div></div>';
+      })() +
       '</div>' +
-      '<div class="btn-row mt8">' +
-      '<label class="btn sm" style="cursor:pointer;text-align:center">Загрузить фото' +
-      '<input type="file" id="av-upload" accept="image/*" style="display:none"></label>' +
-      (p.photo ? '<button class="btn sm danger" id="av-remove">Убрать фото</button>' : '') +
-      '</div>' +
-      '<button class="btn primary mt12" id="btn-prof-save" style="width:100%">Сохранить</button>' +
+
+      '<div class="prof-card">' +
+      '<div class="prof-h">Мой инвентарь <span class="muted">' + (s.phones || []).filter(function (x) { return !x.sold; }).length + '</span></div>' +
+      (function () {
+        const phones = (s.phones || []).filter(function (x) { return !x.sold; });
+        if (!phones.length) return '<div class="empty"><b>Инвентарь пуст</b><p>Купи первый телефон в ленте.</p></div>';
+        return '<div class="stock-grid">' + phones.map(function (x) {
+          const m = root.Engine.MODELS_BY_ID[x.modelId] || {};
+          const cond = root.EXTRA.conditionOf(x);
+          const cls = cond.key === 'good' ? 'ok' : cond.key === 'average' ? 'warn' : 'bad';
+          return '<div class="stock-item" data-act="open-phone" data-id="' + x.id + '">' +
+            '<div class="stock-top"><div class="thumb">' + thumbHTML(m) + '</div>' +
+            '<div class="stock-info"><div class="nm">' + (s.mainPhoneId === x.id ? '<span class="main-badge">★ основной</span> ' : '') + esc(m.name) + ' ' + x.storage + ' ГБ</div>' +
+            '<div class="sub">' + esc(x.color || '') + '</div>' +
+            '<div class="val">≈ ' + money(root.Engine.playerValue(x)) + '</div>' +
+            '<div class="stock-defects"><span class="dtag ' + cls + '">' + esc(cond.name) + '</span>' +
+            (x.brick ? '<span class="dtag bad">кирпич</span>' : '') + '</div>' +
+            '</div></div></div>';
+        }).join('') + '</div>';
+      })() +
       '</div>' +
 
       '<div class="prof-card">' +
@@ -11823,7 +11879,8 @@ const App = {
         av.style.background = root.EXTRA.AVATAR_COLORS[p.color];
       };
     });
-    $('#btn-prof-save').onclick = () => {
+    const profSave = $('#btn-prof-save');
+    if (profSave) profSave.onclick = () => {
       p.name = ($('#inp-name').value || 'Перекупщик').trim().slice(0, 24);
       p.city = ($('#inp-city').value || 'Москва').trim().slice(0, 24);
       p.about = ($('#inp-about').value || '').trim().slice(0, 90);
