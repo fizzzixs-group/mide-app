@@ -8656,7 +8656,6 @@ window.DESK_PHOTO = [];
       (place ? '<div class="ldb-place">Место ' + place + ' в рейтинге</div>' : '') +
       '</div>' +
       ldbMainCard(row) +
-      ldbInventory(row) +
       '<div class="ldb-pstats">' +
       statRow('Сделок', row.deals || 0) +
       statRow('Лучшая сделка', row.best_deal ? money(row.best_deal) : '—') +
@@ -8664,6 +8663,7 @@ window.DESK_PHOTO = [];
       statRow('Профит', ((row.profit || 0) > 0 ? '+' : '') + money(row.profit || 0)) +
       statRow('Дата регистрации', fmtDate(row.created_at)) +
       '</div>' +
+      ldbInventory(row) +
       '<div class="ldb-note">Капитал — деньги и стоимость склада. Данные обновляются автоматически.</div>' +
       '</div>';
     wireBadges(box);
