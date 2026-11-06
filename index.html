@@ -8878,7 +8878,15 @@ const App = {
       this.bind();
       this.render();
       this.guardRender();
-      if (location.hash === '#profile') setTimeout(() => { App.closeModal(); App.go('profile'); }, 400);
+      if (location.hash === '#profile') setTimeout(() => {
+        App.closeModal();
+        try { App.go('profile'); }
+        catch (e) {
+          document.title = 'ERR ' + (e && e.message);
+          const pb = document.getElementById('view-profile');
+          if (pb) pb.innerHTML = '<div style="padding:20px;font-size:12px;white-space:pre-wrap">' + String((e && e.stack) || e) + '</div>';
+        }
+      }, 400);
       if (fresh || !this.state.mode) this.modeModal(fresh);
       else if (!this.state.tutorialDone) this.showIntro();
     },
