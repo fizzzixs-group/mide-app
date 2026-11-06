@@ -8208,6 +8208,7 @@ window.DESK_PHOTO = [];
     admin: { file: 'badge-admin.png', title: 'Админ', desc: 'Владелец игры' },
     leader: { file: 'badge-leader.png', title: 'Лидер', desc: 'Занимал первое место в рейтинге за месяц' },
     creator: { file: 'badge-creator.png', title: 'Креатор', desc: 'Внёс вклад в дизайн игры' },
+    femboy: { file: 'badge-creator.png', title: 'Фембой', desc: '👍 — главный фембой и один из разработчиков игры' },
     coder: { file: 'badge-coder.png', title: 'Кодер', desc: 'Один из разработчиков игры' },
     content: { file: 'badge-content.png', title: 'Контент-мейкер', desc: 'Делает контент по игре' }
   };
@@ -11868,27 +11869,6 @@ const App = {
           '<div class="stock-defects"><span class="dtag ' + cls + '">' + esc(cond.name) + '</span>' +
           (mp.brick ? '<span class="dtag bad">кирпич</span>' : '') + '</div>' +
           '</div></div></div>';
-      })() +
-      '</div>' +
-
-      '<div class="prof-card">' +
-      '<div class="prof-h">Мой инвентарь <span class="muted">' + (s.phones || []).filter(function (x) { return !x.sold; }).length + '</span></div>' +
-      (function () {
-        const phones = (s.phones || []).filter(function (x) { return !x.sold; });
-        if (!phones.length) return '<div class="empty"><b>Инвентарь пуст</b><p>Купи первый телефон в ленте.</p></div>';
-        return '<div class="stock-grid">' + phones.map(function (x) {
-          const m = root.Engine.MODELS_BY_ID[x.modelId] || {};
-          const cond = root.EXTRA.conditionOf(x);
-          const cls = cond.key === 'good' ? 'ok' : cond.key === 'average' ? 'warn' : 'bad';
-          return '<div class="stock-item" data-act="open-phone" data-id="' + x.id + '">' +
-            '<div class="stock-top"><div class="thumb"><div class="svg-wrap photo">' + (root.PHOTO ? root.PHOTO.ph(m.id) : '') + '</div></div>' +
-            '<div class="stock-info"><div class="nm">' + (s.mainPhoneId === x.id ? '<span class="main-badge">★ основной</span> ' : '') + esc(m.name) + ' ' + x.storage + ' ГБ</div>' +
-            '<div class="sub">' + esc(x.color || '') + '</div>' +
-            '<div class="val">≈ ' + money(root.Engine.playerValue(x)) + '</div>' +
-            '<div class="stock-defects"><span class="dtag ' + cls + '">' + esc(cond.name) + '</span>' +
-            (x.brick ? '<span class="dtag bad">кирпич</span>' : '') + '</div>' +
-            '</div></div></div>';
-        }).join('') + '</div>';
       })() +
       '</div>' +
 
