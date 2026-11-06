@@ -11772,25 +11772,7 @@ const App = {
       });
     }
 
-    // скрытый вход в служебную панель: серия нажатий по аватару, рейтингу или звёздам отзыва
-    (function () {
-      let taps = 0, timer = null;
-      const tap = () => {
-        taps++;
-        clearTimeout(timer);
-        timer = setTimeout(() => { taps = 0; }, 1400);
-        if (taps >= 7) {
-          taps = 0;
-          clearTimeout(timer);
-          App.testPanel();
-        }
-      };
-      const av = box.querySelector('#prof-avatar');
-      if (av) av.addEventListener('click', tap);
-      const rate = box.querySelector('.prof-rate');
-      if (rate) rate.addEventListener('click', tap);
-      Array.prototype.forEach.call(box.querySelectorAll('.rev-stars'), (el) => el.addEventListener('click', tap));
-    })();
+    // служебная панель открывается только паролем в настройках
 
     const up = box.querySelector('#av-upload');
     if (up) {
