@@ -9021,6 +9021,14 @@ const App = {
         const k = localStorage.getItem(KEY_KEY) || localStorage.getItem(OLD_KEY_KEY);
         if (k) root.AI.setKey(k);
       } catch (e) { }
+      try {
+        if (localStorage.getItem('mide.reset') !== 'r2') {
+          localStorage.removeItem(SAVE_KEY);
+          localStorage.removeItem(OLD_SAVE_KEY);
+          localStorage.setItem('mide.reset', 'r2');
+          this.state = null;
+        }
+      } catch (e) { }
       this.load();
       const fresh = !this.state;
       if (!this.state) this.state = E.newGame('casual');
