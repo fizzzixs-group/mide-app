@@ -8296,6 +8296,34 @@ window.DESK_PHOTO = [];
     } catch (e) { return '—'; }
   }
 
+  function inventoryOf(state) {
+    try {
+      return (state.phones || []).filter(function (p) { return !p.sold; }).map(function (p) {
+        var m = root.Engine.MODELS_BY_ID[p.modelId] || {};
+        var cond = root.EXTRA && root.EXTRA.conditionOf ? root.EXTRA.conditionOf(p) : { key: 'good', name: 'Хорошее' };
+        return {
+          id: p.modelId,
+          n: m.name || 'Телефон',
+          s: p.storage || 0,
+          c: p.color || '',
+          v: Math.round(root.Engine.playerValue(p) || 0),
+          k: cond.key,
+          kn: cond.name,
+          b: !!p.brick,
+          main: state.mainPhoneId === p.id
+        };
+      });
+    } catch (e) { return []; }
+  }
+
+  function mainMeta(state) {
+    try {
+      var mp = root.Engine.mainPhone(state);
+      if (!mp) return { id: null, storage: null };
+      return { id: mp.modelId, storage: mp.storage || null };
+    } catch (e) { return { id: null, storage: null }; }
+  }
+
   function hues(id) {
     var s = String(id || ''), h = 0;
     for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
@@ -8414,6 +8442,7 @@ window.DESK_PHOTO = [];
       state.uid = row.uid;
       try { root.App.save(); } catch (e) { }
     }
+    var meta = mainMeta(state);
     var payload = {
       tg_id: u.id,
       name: u.name,
@@ -8422,6 +8451,9 @@ window.DESK_PHOTO = [];
       deals: state.stats.sold || 0,
       best_deal: Math.round(state.stats.bestDeal || 0),
       main_phone: mainPhoneName(state),
+      main_model: meta.id,
+      main_storage: meta.storage,
+      inventory: inventoryOf(state),
       uid: state.uid,
       username: u.username || '',
       photo_url: u.photo || '',
@@ -8553,6 +8585,38 @@ window.DESK_PHOTO = [];
     return '<div class="ldb-pstat"><span>' + label + '</span><b>' + value + '</b></div>';
   }
 
+  function ldbMainCard(row) {
+    if (!row || !row.main_model) return '';
+    var m = (root.Engine.MODELS_BY_ID || {})[row.main_model] || {};
+    var item = null;
+    (row.inventory || []).forEach(function (x) { if (x && x.main) item = x; });
+    return '<div class="prof-card"><div class="prof-h">Основной телефон</div>' +
+      '<div class="stock-item"><div class="stock-top"><div class="thumb"><div class="svg-wrap photo">' +
+      (root.PHOTO ? root.PHOTO.ph(m.id || row.main_model) : '') + '</div></div>' +
+      '<div class="stock-info"><div class="nm">' + esc(m.name || 'Телефон') + ' ' + (row.main_storage || '') + ' ГБ</div>' +
+      '<div class="sub">' + esc(item ? item.kn : '') + '</div>' +
+      (item ? '<div class="val">Сейчас стоит ≈ ' + money(item.v) + '</div>' : '') +
+      '</div></div></div></div>';
+  }
+
+  function ldbInventory(row) {
+    var inv = (row && row.inventory) || [];
+    var head = '<div class="prof-card"><div class="prof-h">Инвентарь <span class="muted">' + inv.length + '</span></div>';
+    if (!inv.length) return head + '<div class="empty"><b>Инвентарь пуст</b></div></div>';
+    return head + '<div class="stock-grid">' + inv.map(function (x) {
+      var m = (root.Engine.MODELS_BY_ID || {})[x.id] || {};
+      var cls = x.k === 'good' ? 'ok' : x.k === 'average' ? 'warn' : 'bad';
+      return '<div class="stock-item"><div class="stock-top"><div class="thumb"><div class="svg-wrap photo">' +
+        (root.PHOTO ? root.PHOTO.ph(x.id) : '') + '</div></div>' +
+        '<div class="stock-info"><div class="nm">' + (x.main ? '<span class="main-badge">★ основной</span> ' : '') + esc(m.name || x.n) + ' ' + x.s + ' ГБ</div>' +
+        '<div class="sub">' + esc(x.c) + '</div>' +
+        '<div class="val">≈ ' + money(x.v) + '</div>' +
+        '<div class="stock-defects"><span class="dtag ' + cls + '">' + esc(x.kn) + '</span>' +
+        (x.b ? '<span class="dtag bad">кирпич</span>' : '') + '</div>' +
+        '</div></div></div>';
+    }).join('') + '</div></div>';
+  }
+
   async function renderUser(box, tgId) {
     boxRef = box;
     mode = 'user';
@@ -8591,8 +8655,9 @@ window.DESK_PHOTO = [];
       '<div class="ldb-pbadges">' + (badgeChip(row.badge) || '') + '</div>' +
       (place ? '<div class="ldb-place">Место ' + place + ' в рейтинге</div>' : '') +
       '</div>' +
+      ldbMainCard(row) +
+      ldbInventory(row) +
       '<div class="ldb-pstats">' +
-      statRow('Основной телефон', esc(row.main_phone || '—')) +
       statRow('Сделок', row.deals || 0) +
       statRow('Лучшая сделка', row.best_deal ? money(row.best_deal) : '—') +
       statRow('Капитал', money(row.capital)) +
