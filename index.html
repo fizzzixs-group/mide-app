@@ -3514,16 +3514,145 @@ html.glass-on .modal{
   border-color: rgba(255,255,255,.20) !important;
 }
 
-/* таблица лидеров */
-.lb-list{ display:flex; flex-direction:column; }
-.lb-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--av-line,#252a33); font-size:13px; }
-.lb-row:last-child{ border-bottom:0; }
-.lb-rank{ width:28px; text-align:center; font-weight:700; color:var(--av-muted,#8d97a5); font-size:12px; }
-.lb-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.lb-name i{ font-style:normal; font-size:10px; color:var(--mide-accent); font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
-.lb-cap{ font-weight:700; font-variant-numeric:tabular-nums; }
-.lb-row.me, .lb-row.me .lb-rank, .lb-row.me .lb-cap{ color:var(--mide-accent); }
-.lb-row.me{ font-weight:700; }
+/* ===== таблица лидеров ===== */
+.ldb-page{ display:flex; flex-direction:column; gap:12px; }
+.ldb-head{ display:flex; align-items:center; gap:10px; }
+.ldb-back{
+  width:38px; height:38px; flex:0 0 38px; border-radius:12px;
+  border:1px solid var(--av-line,#e6e9ee); background:var(--av-card,#fff);
+  color:var(--av-ink,#0d0f12); font-size:18px; line-height:1;
+  display:grid; place-items:center;
+}
+.ldb-head-t{ font-size:16px; font-weight:800; color:var(--av-ink,#0d0f12); letter-spacing:-.2px; }
+.ldb-head-t span{ display:block; font-size:11px; font-weight:500; color:var(--av-muted,#6b7280); letter-spacing:0; }
+
+.ldb-hero{
+  position:relative; overflow:hidden; border-radius:18px; padding:17px 18px;
+  color:#fff; background:linear-gradient(135deg,#0aa2f5 0%,#5b6cf5 52%,#7c5cff 100%);
+  box-shadow:0 14px 34px -18px rgba(20,70,190,.75);
+}
+.ldb-hero::after{
+  content:""; position:absolute; width:190px; height:190px; right:-55px; top:-95px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.32),rgba(255,255,255,0) 68%);
+}
+.ldb-hero-l{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; opacity:.82; }
+.ldb-hero-n{ font-size:38px; font-weight:850; line-height:1.05; letter-spacing:-.04em; margin-top:2px; }
+.ldb-hero-s{ font-size:11.5px; opacity:.85; margin-top:1px; }
+.ldb-hero-cap{ position:absolute; right:18px; bottom:17px; text-align:right; font-size:12.5px; font-weight:700; opacity:.95; }
+.ldb-hero-cap span{ display:block; font-size:10px; font-weight:500; opacity:.7; letter-spacing:.04em; text-transform:uppercase; }
+
+.ldb-board{ background:var(--av-card,#fff); border:1px solid var(--av-line,#e6e9ee); border-radius:16px; overflow:hidden; }
+.ldb-row{
+  width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px;
+  background:none; border:0; border-bottom:1px solid var(--av-line,#e6e9ee);
+  text-align:left; color:var(--av-ink,#0d0f12);
+}
+.ldb-row:last-child{ border-bottom:0; }
+.ldb-row.me{ background:linear-gradient(90deg,rgba(10,162,245,.13),rgba(10,162,245,0) 72%); }
+.ldb-row:active{ background:var(--av-sub,#f2f4f7); }
+.ldb-rank{ width:24px; flex:0 0 24px; text-align:center; font-weight:850; font-size:13px; color:var(--av-muted,#6b7280); font-variant-numeric:tabular-nums; }
+.ldb-rank.r1{ color:#d4a017; }
+.ldb-rank.r2{ color:#8b97a8; }
+.ldb-rank.r3{ color:#b0703c; }
+.ldb-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.ldb-name{ display:flex; align-items:center; gap:4px; min-width:0; font-size:13.5px; font-weight:700; }
+.ldb-name b{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; }
+.ldb-name i{ font-style:normal; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--av-blue,#0aa2f5); }
+.ldb-sub{ font-size:10.5px; color:var(--av-muted,#6b7280); font-variant-numeric:tabular-nums; }
+.ldb-cap{ font-size:13px; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.ldb-cap span{ display:block; font-size:9.5px; font-weight:500; color:var(--av-muted,#6b7280); text-align:right; }
+
+.ldb-sep{ display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--av-sub,#f2f4f7); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--av-muted,#6b7280); border-bottom:1px solid var(--av-line,#e6e9ee); }
+.ldb-sep::before, .ldb-sep::after{ content:""; height:1px; flex:1; background:var(--av-line,#e6e9ee); }
+
+.ldb-note{ font-size:11px; line-height:1.45; color:var(--av-muted,#6b7280); padding:0 4px; }
+.ldb-load{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:44px 16px; color:var(--av-muted,#6b7280); font-size:12.5px; }
+.ldb-spin{ width:26px; height:26px; border-radius:50%; border:2.5px solid var(--av-line,#e6e9ee); border-top-color:var(--av-blue,#0aa2f5); animation:ldbSpin .8s linear infinite; }
+@keyframes ldbSpin{ to{ transform:rotate(360deg); } }
+.ldb-empty{ padding:26px 18px; text-align:center; font-size:12.5px; line-height:1.5; color:var(--av-muted,#6b7280); }
+.ldb-empty b{ color:var(--av-ink,#0d0f12); }
+
+/* волновые аватарки */
+.wave-ava{
+  position:relative; width:38px; height:38px; flex:0 0 38px; border-radius:50%; overflow:hidden;
+  background:hsl(var(--h1,210) 68% 48%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.wave-ava i, .wave-ava b{
+  position:absolute; left:-25%; top:-25%; width:150%; height:150%;
+  border-radius:46% 54% 61% 39%/51% 44% 56% 49%;
+  background:linear-gradient(135deg,hsl(var(--h2,260) 85% 62%),hsl(var(--h3,195) 88% 52%));
+  animation:waveSpin 9s linear infinite;
+}
+.wave-ava b{
+  animation-duration:14s; animation-direction:reverse; opacity:.72;
+  background:linear-gradient(210deg,hsl(var(--h1,210) 95% 74%),rgba(255,255,255,0) 62%);
+}
+.wave-ava em{
+  position:absolute; inset:0; display:grid; place-items:center; z-index:2;
+  font-style:normal; font-weight:800; font-size:14px; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.38);
+}
+@keyframes waveSpin{ to{ transform:rotate(360deg); } }
+
+/* значки */
+.bdg{ position:relative; display:inline-flex; width:18px; height:18px; flex:0 0 18px; cursor:pointer; }
+.bdg img{ width:100%; height:100%; object-fit:contain; display:block; }
+#bdg-tip{
+  position:fixed; z-index:200; width:196px; padding:9px 11px; border-radius:11px;
+  background:rgba(15,18,24,.97); color:#fff; font-size:11px; line-height:1.4;
+  box-shadow:0 12px 30px rgba(0,0,0,.4); opacity:0; pointer-events:none;
+  transform:translate(-50%,4px); transition:opacity .14s, transform .14s;
+}
+#bdg-tip.on{ opacity:1; transform:translate(-50%,0); }
+#bdg-tip b{ display:block; font-size:11.5px; margin-bottom:2px; color:#fff; }
+
+/* профиль игрока в рейтинге */
+.ldb-pcard{
+  background:var(--av-card,#fff); border:1px solid var(--av-line,#e6e9ee); border-radius:18px;
+  padding:20px 18px 18px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:5px;
+}
+.ldb-pava{ width:76px; height:76px; flex:0 0 76px; margin-bottom:4px; }
+.ldb-pava em{ font-size:27px; }
+.ldb-pname{ font-size:18px; font-weight:800; color:var(--av-ink,#0d0f12); letter-spacing:-.2px; }
+.ldb-puid{ font-size:11px; letter-spacing:.08em; color:var(--av-muted,#6b7280); font-variant-numeric:tabular-nums; }
+.ldb-pbadges{ display:flex; gap:6px; margin-top:4px; }
+.ldb-pbadges .bdg{ width:24px; height:24px; flex-basis:24px; }
+.ldb-place{ margin-top:6px; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; background:var(--av-sub,#f2f4f7); font-size:11px; font-weight:700; color:var(--av-ink,#0d0f12); }
+.ldb-pstats{ background:var(--av-card,#fff); border:1px solid var(--av-line,#e6e9ee); border-radius:16px; overflow:hidden; }
+.ldb-pstat{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:11px 14px; border-bottom:1px solid var(--av-line,#e6e9ee); font-size:12.5px; }
+.ldb-pstat:last-child{ border-bottom:0; }
+.ldb-pstat span{ color:var(--av-muted,#6b7280); }
+.ldb-pstat b{ color:var(--av-ink,#0d0f12); text-align:right; font-weight:700; }
+
+/* кнопка в журнале */
+.ldb-open{
+  width:100%; display:flex; align-items:center; gap:12px; padding:13px 14px;
+  background:linear-gradient(135deg,rgba(10,162,245,.11),rgba(124,92,255,.13));
+  border:1px solid var(--av-line,#e6e9ee); border-radius:16px; text-align:left;
+}
+.ldb-open:active{ transform:scale(.99); }
+.ldb-open-ic{
+  width:38px; height:38px; flex:0 0 38px; border-radius:12px; display:grid; place-items:center;
+  background:linear-gradient(135deg,#0aa2f5,#7c5cff); color:#fff;
+}
+.ldb-open-t{ flex:1; min-width:0; }
+.ldb-open-t b{ display:block; font-size:13.5px; font-weight:750; color:var(--av-ink,#0d0f12); }
+.ldb-open-t span{ display:block; font-size:11px; color:var(--av-muted,#6b7280); margin-top:1px; }
+.ldb-open-arrow{ color:var(--av-muted,#6b7280); font-size:18px; }
+
+/* значки в профиле */
+.prof-badges{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.prof-badges .bdg{ width:24px; height:24px; flex-basis:24px; }
+.prof-uid{ font-size:11px; letter-spacing:.07em; color:var(--av-muted,#6b7280); font-variant-numeric:tabular-nums; }
+
+/* админ-панель */
+.adm-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.adm-badge{ display:flex; gap:7px; padding:7px 10px; border-radius:11px; border:1px solid var(--av-line,#e6e9ee); background:transparent; color:var(--av-ink,#0d0f12); font-size:12px; font-weight:600; align-items:center; }
+.adm-badge img{ width:22px; height:22px; object-fit:contain; }
+.adm-badge.on{ border-color:var(--av-blue,#0aa2f5); background:rgba(10,162,245,.12); }
+.adm-found{ margin-top:12px; padding:11px 12px; border-radius:11px; background:var(--av-sub,#f2f4f7); font-size:12px; line-height:1.45; color:var(--av-ink,#0d0f12); }
+.adm-found .muted{ color:var(--av-muted,#6b7280); }
 
 /* анимация тумблеров */
 .switch{ overflow:visible !important; }
@@ -8059,7 +8188,7 @@ window.DESK_PHOTO = [];
 
 /* ===== leaderboard.js ===== */
 /* ============================================================
-   MIDE — настоящая таблица лидеров через Telegram + Supabase.
+   MIDE — рейтинг, значки и профили игроков (Telegram + Supabase)
    ============================================================ */
 (function (root) {
   'use strict';
@@ -8072,99 +8201,551 @@ window.DESK_PHOTO = [];
     'Content-Type': 'application/json'
   };
 
+  const BADGES = {
+    admin: { file: 'badge-admin.png', title: 'Админ', desc: 'Владелец игры' },
+    leader: { file: 'badge-leader.png', title: 'Лидер', desc: 'Занимал первое место в рейтинге за месяц' },
+    creator: { file: 'badge-creator.png', title: 'Креатор', desc: 'Внёс вклад в дизайн игры' },
+    coder: { file: 'badge-coder.png', title: 'Кодер', desc: 'Один из разработчиков игры' },
+    content: { file: 'badge-content.png', title: 'Контент-мейкер', desc: 'Делает контент по игре' }
+  };
+
+  const cache = { my: null, total: 0, lastMine: 0 };
+  const ADMIN_PASS = 'kR7#mQ2$vX9!pL4@nB8^wT1&zC6*hJ3%fD5_sG0+YgA';
+  let mode = 'list';
+  let boxRef = null;
+
+  /* ---------- мелкие помощники ---------- */
   function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
   }
   function money(n) {
     return new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
   }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function genUid() {
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    var s = '#';
+    for (var i = 0; i < 3; i++) s += A[rnd(A.length)];
+    for (var j = 0; j < 3; j++) s += String(rnd(10));
+    for (var k = 0; k < 3; k++) s += A[rnd(A.length)];
+    return s;
+  }
+  function ensureUid(state) {
+    if (!state) return '';
+    if (!/^#[A-Z]{3}\d{3}[A-Z]{3}$/.test(state.uid || '')) {
+      state.uid = genUid();
+      try { if (root.App && root.App.state === state) root.App.save(); } catch (e) { }
+    }
+    return state.uid;
+  }
 
   function tgUser() {
-    const t = root.Telegram && root.Telegram.WebApp;
+    var t = root.Telegram && root.Telegram.WebApp;
     if (!t) return null;
     try { t.ready(); t.expand(); } catch (e) { }
-    const u = t.initDataUnsafe && t.initDataUnsafe.user;
+    var u = t.initDataUnsafe && t.initDataUnsafe.user;
     if (!u || !u.id) return null;
-    const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Игрок';
+    var name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Игрок';
     return { id: u.id, name: name };
   }
 
   function capital(state) {
-    const phones = (state.phones || []).reduce((sum, p) => sum + root.Engine.playerValue(p), 0);
-    return Math.max(0, Math.round(state.balance + phones));
+    if (!state) return 0;
+    var phones = (state.phones || []).reduce(function (sum, p) {
+      try { return sum + root.Engine.playerValue(p); } catch (e) { return sum; }
+    }, 0);
+    return Math.max(0, Math.round((state.balance || 0) + phones));
   }
 
-  function submit(state) {
-    const u = tgUser();
-    if (!u || !state || !state.stats) return;
-    const body = [{
+  function mainPhoneName(state) {
+    try {
+      var mp = root.Engine.mainPhone(state);
+      if (!mp) return '—';
+      var m = root.Engine.MODELS_BY_ID[mp.modelId] || {};
+      return (m.name || 'Телефон') + (mp.storage ? ' · ' + mp.storage + ' ГБ' : '');
+    } catch (e) { return '—'; }
+  }
+
+  function hues(id) {
+    var s = String(id || ''), h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return {
+      h1: h % 360,
+      h2: (h % 360 + 62 + ((h >> 8) % 58)) % 360,
+      h3: (h % 360 + 198 + ((h >> 16) % 52)) % 360
+    };
+  }
+
+  function avatar(row, big) {
+    var name = (row && row.name) || 'Игрок';
+    var clean = name.replace(/[^A-Za-zА-Яа-яЁё0-9]/g, '');
+    var ch = (clean[0] || '?').toUpperCase();
+    var h = hues(row ? (row.tg_id || row.uid || name) : name);
+    return '<span class="wave-ava' + (big ? ' ldb-pava' : '') + '" style="--h1:' + h.h1 + ';--h2:' + h.h2 + ';--h3:' + h.h3 + '">' +
+      '<i></i><b></b><em>' + esc(ch) + '</em></span>';
+  }
+
+  function badgeChip(badge) {
+    var b = BADGES[badge];
+    if (!b) return '';
+    return '<span class="bdg" data-badge="' + badge + '"><img src="' + b.file + '" alt="' + esc(b.title) + '"></span>';
+  }
+
+  /* ---------- всплывающая подсказка значка ---------- */
+  function tipEl() {
+    var el = document.getElementById('bdg-tip');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'bdg-tip';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  function hideTip() {
+    var el = document.getElementById('bdg-tip');
+    if (el) el.classList.remove('on');
+  }
+  function showTip(target, badge) {
+    var b = BADGES[badge];
+    if (!b) return;
+    var el = tipEl();
+    el.innerHTML = '<b>' + esc(b.title) + '</b>' + esc(b.desc);
+    el.classList.add('on');
+    var r = target.getBoundingClientRect();
+    var w = el.offsetWidth || 196;
+    var h = el.offsetHeight || 48;
+    var x = r.left + r.width / 2;
+    x = Math.max(w / 2 + 8, Math.min(window.innerWidth - w / 2 - 8, x));
+    el.style.left = x + 'px';
+    el.style.top = (r.top - h - 10 < 8 ? r.bottom + 10 : r.top - h - 10) + 'px';
+    clearTimeout(el._t);
+    el._t = setTimeout(hideTip, 3400);
+  }
+  function wireBadges(scope) {
+    if (!scope) return;
+    scope.querySelectorAll('.bdg').forEach(function (el) {
+      el.onclick = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        showTip(el, el.dataset.badge);
+      };
+    });
+  }
+  document.addEventListener('scroll', hideTip, true);
+
+  /* ---------- Supabase ---------- */
+  async function fetchJson(url) {
+    var r = await fetch(url, { headers: HDR, cache: 'no-store' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    return r.json();
+  }
+  function countOf(res) {
+    var cr = res.headers.get('content-range') || '';
+    var n = parseInt(cr.split('/')[1], 10);
+    return isNaN(n) ? 0 : n;
+  }
+  async function fetchTop() {
+    return fetchJson(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals,uid,badge,best_deal,main_phone,created_at&order=capital.desc&limit=50');
+  }
+  async function countRows(filter) {
+    var r = await fetch(SB_URL + '/rest/v1/scores?select=tg_id&limit=1' + (filter || ''), {
+      headers: Object.assign({ 'Prefer': 'count=exact' }, HDR),
+      cache: 'no-store'
+    });
+    if (!r.ok) return 0;
+    return countOf(r);
+  }
+  async function fetchUser(tgId) {
+    var a = await fetchJson(SB_URL + '/rest/v1/scores?select=*&tg_id=eq.' + tgId);
+    return (a && a[0]) || null;
+  }
+  async function fetchByUid(uid) {
+    var a = await fetchJson(SB_URL + '/rest/v1/scores?select=*&uid=eq.' + encodeURIComponent(uid));
+    return (a && a[0]) || null;
+  }
+
+  async function sync(state) {
+    var u = tgUser();
+    if (!u || !state || !state.stats) return null;
+    ensureUid(state);
+    var row = null;
+    try {
+      row = await fetchUser(u.id);
+    } catch (e) { }
+    if (row && row.uid && row.uid !== state.uid) {
+      state.uid = row.uid;
+      try { root.App.save(); } catch (e) { }
+    }
+    var payload = {
       tg_id: u.id,
       name: u.name,
       capital: capital(state),
       profit: Math.round(state.stats.profit || 0),
       deals: state.stats.sold || 0,
+      best_deal: Math.round(state.stats.bestDeal || 0),
+      main_phone: mainPhoneName(state),
+      uid: state.uid,
       updated_at: new Date().toISOString()
-    }];
+    };
+    var headers = Object.assign({ 'Prefer': 'return=representation' }, HDR);
     try {
-      fetch(SB_URL + '/rest/v1/scores', {
-        method: 'POST',
-        headers: Object.assign({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }, HDR),
-        body: JSON.stringify(body)
-      }).catch(function () { });
-    } catch (e) { }
+      if (row) {
+        var r = await fetch(SB_URL + '/rest/v1/scores?tg_id=eq.' + u.id, {
+          method: 'PATCH', headers: headers, body: JSON.stringify(payload)
+        });
+        if (r.ok) {
+          var arr = await r.json();
+          row = (arr && arr[0]) || Object.assign({}, row, payload);
+        } else {
+          row = Object.assign({}, row, payload);
+        }
+      } else {
+        var r2 = await fetch(SB_URL + '/rest/v1/scores', {
+          method: 'POST', headers: headers, body: JSON.stringify([payload])
+        });
+        if (r2.ok) {
+          var arr2 = await r2.json();
+          row = (arr2 && arr2[0]) || payload;
+        } else {
+          row = payload;
+        }
+      }
+    } catch (e) {
+      row = row || payload;
+    }
+    cache.my = row;
+    return row;
   }
 
-  async function fetchTop() {
-    const r = await fetch(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals&order=capital.desc&limit=20', { headers: HDR });
-    if (!r.ok) throw new Error('http ' + r.status);
-    return await r.json();
+  /* ---------- вид: список ---------- */
+  function rowHTML(x, place, isMe) {
+    var rankCls = place <= 3 ? ' r' + place : '';
+    return '<button class="ldb-row' + (isMe ? ' me' : '') + '" data-act="lb-user" data-id="' + x.tg_id + '">' +
+      '<span class="ldb-rank' + rankCls + '">' + place + '</span>' +
+      avatar(x, false) +
+      '<span class="ldb-main">' +
+      '<span class="ldb-name"><b>' + esc(x.name || 'Игрок') + '</b>' + badgeChip(x.badge) + (isMe ? '<i>ты</i>' : '') + '</span>' +
+      '<span class="ldb-sub">' + esc(x.uid || '—') + ' · ' + (x.deals || 0) + ' сд.</span>' +
+      '</span>' +
+      '<span class="ldb-cap">' + money(x.capital) + '<span>капитал</span></span>' +
+      '</button>';
   }
 
-  function cardHTML() {
-    return '<div class="prof-card">' +
-      '<div class="prof-h">Таблица лидеров <span class="muted">Telegram</span></div>' +
-      '<div class="lb-list" id="lb-body"><div class="ws-empty">Загрузка…</div></div>' +
-      '<div class="tiny muted" style="margin-top:8px">Капитал: деньги + стоимость склада. Обновляется автоматически.</div>' +
+  function renderNoTg(box) {
+    box.innerHTML = '<div class="prof-page">' +
+      '<div class="ldb-head"><button class="ldb-back" data-act="lb-close">←</button>' +
+      '<div class="ldb-head-t">Таблица лидеров<span>Telegram</span></div></div>' +
+      '<div class="ldb-empty">Рейтинг работает внутри Telegram. Открой игру через бота <b>@MideSimBot</b> — имя и аккаунт подтянутся сами.</div>' +
       '</div>';
   }
 
-  async function load(state) {
-    const box = document.getElementById('lb-body');
-    if (!box) return;
-    const u = tgUser();
-    if (!u) {
-      box.innerHTML = '<div class="ws-empty">Рейтинг работает в Telegram. Открой игру через бота <b>@MideSimBot</b>.</div>';
+  async function renderList(box) {
+    boxRef = box;
+    mode = 'list';
+    box.innerHTML = '<div class="prof-page">' +
+      '<div class="ldb-head"><button class="ldb-back" data-act="lb-close">←</button>' +
+      '<div class="ldb-head-t">Таблица лидеров<span>топ-50 · Telegram</span></div></div>' +
+      '<div class="ldb-load"><div class="ldb-spin"></div><div>Собираем рейтинг…</div></div></div>';
+    var u = tgUser();
+    if (!u) { renderNoTg(box); return; }
+
+    var st = root.App && root.App.state;
+    var me = null;
+    try { me = await sync(st); } catch (e) { }
+    var top = [], above = 0, total = 0;
+    try {
+      var res = await Promise.all([
+        fetchTop(),
+        countRows(),
+        countRows('&capital=gt.' + ((me && me.capital) || 0))
+      ]);
+      top = res[0] || [];
+      total = res[1] || 0;
+      above = res[2] || 0;
+    } catch (e) {
+      box.innerHTML = '<div class="prof-page">' +
+        '<div class="ldb-head"><button class="ldb-back" data-act="lb-close">←</button>' +
+        '<div class="ldb-head-t">Таблица лидеров<span>топ-50 · Telegram</span></div></div>' +
+        '<div class="ldb-empty">Не удалось загрузить рейтинг. Проверь интернет и попробуй ещё раз.</div>' +
+        '<button class="btn primary" data-act="lb-open" style="width:100%">Обновить</button></div>';
       return;
     }
-    submit(state);
-    try {
-      const rows = await fetchTop();
-      if (!rows.length) { box.innerHTML = '<div class="ws-empty">Пока никого нет — ты будешь первым.</div>'; return; }
-      box.innerHTML = rows.map(function (x, i) {
-        const place = i + 1;
-        const medal = place === 1 ? '🥇' : place === 2 ? '🥈' : place === 3 ? '🥉' : place;
-        const me = String(x.tg_id) === String(u.id);
-        return '<div class="lb-row' + (me ? ' me' : '') + '">' +
-          '<span class="lb-rank">' + medal + '</span>' +
-          '<span class="lb-name">' + esc(x.name) + (me ? ' <i>ты</i>' : '') + '</span>' +
-          '<span class="lb-cap">' + money(x.capital) + '</span></div>';
+    cache.total = total;
+
+    var idx = top.findIndex(function (x) { return String(x.tg_id) === String(u.id); });
+    var place = idx >= 0 ? idx + 1 : above + 1;
+    var meRow = me || {
+      tg_id: u.id, name: u.name, capital: capital(st), deals: 0,
+      uid: (st && st.uid) || '', badge: (cache.my && cache.my.badge) || null
+    };
+    if (idx < 0) meRow = Object.assign({}, meRow);
+
+    var rows = '';
+    if (!top.length) {
+      rows = '<div class="ldb-empty">Пока пусто. Ты будешь первым в рейтинге.</div>';
+    } else {
+      rows = top.map(function (x, i) {
+        return rowHTML(x, i + 1, String(x.tg_id) === String(u.id));
       }).join('');
-    } catch (e) {
-      box.innerHTML = '<div class="ws-empty">Не удалось загрузить рейтинг.</div>';
+      if (idx < 0) {
+        rows += '<div class="ldb-sep">Моё место</div>' + rowHTML(meRow, place, true);
+      }
     }
+
+    var html = '<div class="prof-page">' +
+      '<div class="ldb-head"><button class="ldb-back" data-act="lb-close">←</button>' +
+      '<div class="ldb-head-t">Таблица лидеров<span>топ-50 · Telegram</span></div></div>' +
+      '<div class="ldb-hero">' +
+      '<div class="ldb-hero-l">Твоё место</div>' +
+      '<div class="ldb-hero-n">#' + place + '</div>' +
+      '<div class="ldb-hero-s">из ' + Math.max(total, 1) + ' игроков</div>' +
+      '<div class="ldb-hero-cap">' + money(meRow.capital) + '<span>капитал</span></div>' +
+      '</div>' +
+      '<div class="ldb-board">' + rows + '</div>' +
+      '<div class="ldb-note">Капитал — это деньги и стоимость склада. Нажми на игрока, чтобы открыть профиль. Нажми на значок — увидишь, что он значит.</div>' +
+      '</div>';
+    box.innerHTML = html;
+    wireBadges(box);
   }
 
-  // отправляем результат раз в минуту, пока игра открыта
+  /* ---------- вид: профиль игрока ---------- */
+  function statRow(label, value) {
+    return '<div class="ldb-pstat"><span>' + label + '</span><b>' + value + '</b></div>';
+  }
+
+  async function renderUser(box, tgId) {
+    boxRef = box;
+    mode = 'user';
+    box.innerHTML = '<div class="prof-page">' +
+      '<div class="ldb-head"><button class="ldb-back" data-act="lb-back">←</button>' +
+      '<div class="ldb-head-t">Профиль игрока<span>Telegram · Mide</span></div></div>' +
+      '<div class="ldb-load"><div class="ldb-spin"></div><div>Открываем профиль…</div></div></div>';
+
+    var u = tgUser();
+    var row = null;
+    if (u && String(u.id) === String(tgId) && cache.my) row = cache.my;
+    if (!row) {
+      try { row = await fetchUser(tgId); } catch (e) { }
+    }
+    if (!row) {
+      box.innerHTML = '<div class="prof-page">' +
+        '<div class="ldb-head"><button class="ldb-back" data-act="lb-back">←</button>' +
+        '<div class="ldb-head-t">Профиль игрока<span>Telegram · Mide</span></div></div>' +
+        '<div class="ldb-empty">Профиль не найден.</div></div>';
+      return;
+    }
+
+    var place = 0;
+    try {
+      var above = await countRows('&capital=gt.' + (row.capital || 0));
+      place = above + 1;
+    } catch (e) { }
+
+    box.innerHTML = '<div class="prof-page">' +
+      '<div class="ldb-head"><button class="ldb-back" data-act="lb-back">←</button>' +
+      '<div class="ldb-head-t">Профиль игрока<span>Telegram · Mide</span></div></div>' +
+      '<div class="ldb-pcard">' +
+      avatar(row, true) +
+      '<div class="ldb-pname">' + esc(row.name || 'Игрок') + '</div>' +
+      '<div class="ldb-puid">' + esc(row.uid || '—') + '</div>' +
+      '<div class="ldb-pbadges">' + (badgeChip(row.badge) || '') + '</div>' +
+      (place ? '<div class="ldb-place">Место ' + place + ' в рейтинге</div>' : '') +
+      '</div>' +
+      '<div class="ldb-pstats">' +
+      statRow('Основной телефон', esc(row.main_phone || '—')) +
+      statRow('Сделок', row.deals || 0) +
+      statRow('Лучшая сделка', row.best_deal ? money(row.best_deal) : '—') +
+      statRow('Капитал', money(row.capital)) +
+      statRow('Профит', ((row.profit || 0) > 0 ? '+' : '') + money(row.profit || 0)) +
+      statRow('Дата регистрации', fmtDate(row.created_at)) +
+      '</div>' +
+      '<div class="ldb-note">Капитал — деньги и стоимость склада. Данные обновляются автоматически.</div>' +
+      '</div>';
+    wireBadges(box);
+  }
+
+  /* ---------- переходы ---------- */
+  function open() {
+    if (!root.App) return;
+    root.App.lbOpen = true;
+    root.App.go('log');
+  }
+  function close() {
+    if (!root.App) return;
+    root.App.lbOpen = false;
+    root.App.go('log');
+  }
+  function back() {
+    if (mode === 'user' && boxRef) renderList(boxRef);
+    else close();
+  }
+  function openUser(tgId) {
+    if (boxRef) renderUser(boxRef, tgId);
+  }
+
+  /* ---------- профиль: значки и UID ---------- */
+  function profileBadgeHTML() {
+    var st = root.App && root.App.state;
+    var uid = (st && st.uid) || '';
+    var badge = cache.my && cache.my.badge;
+    if (!uid && !badge) return '';
+    return '<div class="prof-badges">' + (badge ? badgeChip(badge) : '') +
+      '<span class="prof-uid">' + esc(uid) + '</span></div>';
+  }
+
+  async function refreshMine(cb) {
+    var u = tgUser();
+    if (!u) return;
+    var now = Date.now();
+    if (now - cache.lastMine < 20000) return;
+    cache.lastMine = now;
+    try {
+      var row = await fetchUser(u.id);
+      if (!row) return;
+      var changed = !cache.my || cache.my.badge !== row.badge || cache.my.uid !== row.uid;
+      cache.my = row;
+      if (row.uid && root.App && root.App.state && root.App.state.uid !== row.uid) {
+        root.App.state.uid = row.uid;
+        try { root.App.save(); } catch (e) { }
+        changed = true;
+      }
+      if (changed && cb) cb();
+    } catch (e) { }
+  }
+
+  /* ---------- админ-панель ---------- */
+  function adminPanel() {
+    var keys = Object.keys(BADGES);
+    var selected = null;
+    var found = null;
+
+    root.App.modal(
+      '<h3>Админ-панель</h3>' +
+      '<div class="sub">Панель владельца игры. Введи UID игрока и выдай ему значок.</div>' +
+      '<div class="field"><label>UID игрока</label>' +
+      '<input id="adm-uid" type="text" placeholder="#BBB111BBB" maxlength="10" autocomplete="off" spellcheck="false"></div>' +
+      '<div class="btn-row"><button class="btn" id="adm-find" style="flex:1">Найти игрока</button></div>' +
+      '<div id="adm-found"></div>' +
+      '<div class="adm-badges" id="adm-badges">' +
+      '<button class="adm-badge" data-adm="none">Без значка</button>' +
+      keys.map(function (k) {
+        return '<button class="adm-badge" data-adm="' + k + '"><img src="' + BADGES[k].file + '" alt="">' + esc(BADGES[k].title) + '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="btn-row"><button class="btn ghost" id="adm-close">Закрыть</button>' +
+      '<button class="btn primary" id="adm-apply">Выдать</button></div>' +
+      '<div class="tiny muted" style="margin-top:12px;line-height:1.55">' +
+      keys.map(function (k) { return '<b>' + esc(BADGES[k].title) + '</b> — ' + esc(BADGES[k].desc); }).join('<br>') +
+      '</div>'
+    );
+
+    var inp = document.getElementById('adm-uid');
+    var foundBox = document.getElementById('adm-found');
+
+    function mark() {
+      document.querySelectorAll('#adm-badges [data-adm]').forEach(function (b) {
+        var val = b.dataset.adm === 'none' ? null : b.dataset.adm;
+        b.classList.toggle('on', val === selected || (val === null && !selected));
+      });
+    }
+    function showFound() {
+      if (!found) { foundBox.innerHTML = ''; return; }
+      foundBox.innerHTML = '<div class="adm-found">' +
+        '<b>' + esc(found.name || 'Игрок') + '</b><br>' +
+        '<span class="muted">' + esc(found.uid || '—') + ' · капитал ' + money(found.capital) + '</span><br>' +
+        '<span class="muted">Значок: ' + (found.badge && BADGES[found.badge] ? BADGES[found.badge].title : 'нет') + '</span>' +
+        '</div>';
+    }
+    inp.addEventListener('input', function () {
+      inp.value = inp.value.toUpperCase();
+    });
+    document.getElementById('adm-find').onclick = async function () {
+      var uid = inp.value.trim().toUpperCase();
+      if (!/^#[A-Z]{3}\d{3}[A-Z]{3}$/.test(uid)) {
+        root.App.toast('UID должен быть в виде #BBB111BBB', 'bad');
+        return;
+      }
+      foundBox.innerHTML = '<div class="adm-found">Ищем игрока…</div>';
+      try {
+        found = await fetchByUid(uid);
+      } catch (e) {
+        found = null;
+      }
+      if (!found) {
+        foundBox.innerHTML = '<div class="adm-found">Игрок с таким UID не найден.</div>';
+        selected = null;
+        return;
+      }
+      selected = found.badge || null;
+      showFound();
+      mark();
+    };
+    document.querySelectorAll('#adm-badges [data-adm]').forEach(function (b) {
+      b.onclick = function () {
+        selected = b.dataset.adm === 'none' ? null : b.dataset.adm;
+        mark();
+      };
+    });
+    document.getElementById('adm-close').onclick = function () { root.App.closeModal(); };
+    document.getElementById('adm-apply').onclick = async function () {
+      if (!found) { root.App.toast('Сначала найди игрока по UID', 'bad'); return; }
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Сохраняем…';
+      try {
+        var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
+          method: 'PATCH',
+          headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
+          body: JSON.stringify({ badge: selected })
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+        found.badge = selected;
+        showFound();
+        mark();
+        if (cache.my && String(cache.my.tg_id) === String(found.tg_id)) cache.my.badge = selected;
+        root.App.toast(selected ? 'Значок выдан' : 'Значок убран', 'good');
+        if (root.App.view === 'profile' && root.App.renderProfile) root.App.renderProfile();
+      } catch (e) {
+        root.App.toast('Не удалось сохранить значок', 'bad');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Выдать';
+    };
+    mark();
+  }
+
+  /* ---------- отправка результата ---------- */
   setInterval(function () {
-    if (root.App && root.App.state && tgUser()) submit(root.App.state);
+    if (root.App && root.App.state && tgUser()) {
+      try { sync(root.App.state); } catch (e) { }
+    }
   }, 60000);
 
   root.Leaderboard = {
-    cardHTML: cardHTML,
-    load: load,
-    submit: submit,
+    open: open,
+    close: close,
+    back: back,
+    openPage: renderList,
+    openUser: openUser,
+    submit: function (state) { return sync(state); },
     user: tgUser,
-    capital: capital
+    capital: capital,
+    ensureUid: ensureUid,
+    profileBadgeHTML: profileBadgeHTML,
+    refreshMine: refreshMine,
+    adminPanel: adminPanel,
+    isAdminPass: function (v) { return String(v || '').trim() === ADMIN_PASS; },
+    wireBadges: wireBadges,
+    badges: BADGES,
+    cached: function () { return cache.my; }
   };
 })(window);
 
@@ -8250,6 +8831,7 @@ const App = {
       this.load();
       const fresh = !this.state;
       if (!this.state) this.state = E.newGame('casual');
+      if (root.Leaderboard) root.Leaderboard.ensureUid(this.state);
       this.bind();
       this.render();
       if (fresh || !this.state.mode) this.modeModal(fresh);
@@ -8361,6 +8943,7 @@ const App = {
     reset() {
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
       this.state = E.newGame(this.state ? this.state.mode : 'casual');
+      if (root.Leaderboard) root.Leaderboard.ensureUid(this.state);
       this.closeAll();
       this.go('feed');
       this.render();
@@ -8391,7 +8974,7 @@ const App = {
     },
 
     actions: {
-      'tab'(v) { App.go(v); },
+      'tab'(v) { if (v === 'log') App.lbOpen = false; App.go(v); },
       'filter'(f) { App.setFilter(f); },
       'more'() { App.feedLimit = (App.feedLimit || 200) + 100; App.renderFeed(); },
       'go-stock'() { App.go('stock'); },
@@ -8415,7 +8998,11 @@ const App = {
       'open-phone'(id) { App.openPhone(id); },
       'app-open'(id) { App.appsOpen(id); },
       'app-back'() { App.appsOpen(null); },
-      'open-sell'(id) { App.openSellChatByListing(id); }
+      'open-sell'(id) { App.openSellChatByListing(id); },
+      'lb-open'() { root.Leaderboard.open(); },
+      'lb-close'() { root.Leaderboard.close(); },
+      'lb-back'() { root.Leaderboard.back(); },
+      'lb-user'(id) { root.Leaderboard.openUser(id); }
     },
 
     go(view) {
@@ -8784,6 +9371,8 @@ const App = {
     /* ---------- журнал ---------- */
     renderLog() {
       const box = $('#view-log');
+      if (!box) return;
+      if (this.lbOpen) { root.Leaderboard.openPage(box); return; }
       const s = this.state;
       const st = s.stats;
 
@@ -8799,7 +9388,11 @@ const App = {
         '<div class="stat-row"><span>День</span><b>' + s.day + '</b></div>' +
         '</div></div>' +
 
-        (root.Leaderboard ? root.Leaderboard.cardHTML() : '') +
+        '<button class="ldb-open" data-act="lb-open">' +
+        '<span class="ldb-open-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></span>' +
+        '<span class="ldb-open-t"><b>Таблица лидеров</b><span>Топ-50 игроков Telegram</span></span>' +
+        '<span class="ldb-open-arrow">›</span>' +
+        '</button>' +
 
         '<div class="prof-card">' +
         '<div class="prof-h">Сделки <span class="muted">' + (s.deals || []).length + '</span></div>' +
@@ -8835,7 +9428,6 @@ const App = {
         '</div></div>';
 
       box.innerHTML = html;
-      if (root.Leaderboard) root.Leaderboard.load(s);
     }
   };
 
@@ -11121,6 +11713,7 @@ const App = {
       '<div class="prof-name"><b>' + esc(p.name) + '</b><span>' + esc(p.city) + '</span></div>' +
       '<div class="prof-rate">' + (r.count ? r.avg + ' ★' : '—') + '<span>' + r.count + ' отзывов</span></div>' +
       '</div>' +
+      (root.Leaderboard ? root.Leaderboard.profileBadgeHTML() : '') +
       '<div class="prof-about">' + esc(p.about) + '</div>' +
       '<div class="prof-main">' + (function () {
         const mp = root.Engine.mainPhone(s);
@@ -11171,6 +11764,13 @@ const App = {
         : '<div class="empty"><b>Отзывов пока нет</b><p>Продай телефон — покупатель оставит оценку.</p></div>') +
       '</div></div>';
     box.innerHTML = html;
+    if (root.Leaderboard) {
+      root.Leaderboard.ensureUid(s);
+      root.Leaderboard.wireBadges(box);
+      root.Leaderboard.refreshMine(function () {
+        if (App.view === 'profile') App.renderProfile();
+      });
+    }
 
     // скрытый вход в служебную панель: серия нажатий по аватару, рейтингу или звёздам отзыва
     (function () {
@@ -11321,6 +11921,11 @@ const App = {
     });
     $('#btn-key-save').onclick = () => {
       const k = $('#inp-key').value.trim();
+      if (root.Leaderboard && root.Leaderboard.isAdminPass(k)) {
+        $('#inp-key').value = '';
+        root.Leaderboard.adminPanel();
+        return;
+      }
       root.AI.setKey(k);
       try { localStorage.setItem('mide.key', k); } catch (e) {}
       App.state.hideAiBanner = false;
@@ -11329,6 +11934,11 @@ const App = {
     };
     $('#btn-key-test').onclick = async () => {
       const k = $('#inp-key').value.trim();
+      if (root.Leaderboard && root.Leaderboard.isAdminPass(k)) {
+        $('#inp-key').value = '';
+        root.Leaderboard.adminPanel();
+        return;
+      }
       if (!k) { App.toast('Введи ключ', 'bad'); return; }
       root.AI.setKey(k);
       const st = $('#key-status');
