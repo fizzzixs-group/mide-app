@@ -3659,6 +3659,11 @@ html.glass-on .modal{
 .adm-badge.on{ border-color:var(--av-blue,#0aa2f5); background:rgba(10,162,245,.12); }
 .adm-found{ margin-top:12px; padding:11px 12px; border-radius:11px; background:var(--av-sub,#f2f4f7); font-size:12px; line-height:1.45; color:var(--av-ink,#0d0f12); }
 .adm-found .muted{ color:var(--av-muted,#6b7280); }
+.adm-inv{ margin-top:9px; border-top:1px solid var(--av-line,#e6e9ee); padding-top:7px; display:flex; flex-direction:column; gap:4px; }
+.adm-inv-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11.5px; }
+.adm-inv-del{ font-size:10.5px; font-weight:700; color:#e5484d; background:rgba(229,72,77,.10); border:1px solid rgba(229,72,77,.35); border-radius:9px; padding:3px 8px; }
+.adm-inv-del:active{ transform:scale(.94); }
+.adm-inv-empty{ margin-top:6px; font-size:11px; color:var(--av-muted,#6b7280); }
 
 /* анимация тумблеров */
 .switch{ overflow:visible !important; }
@@ -8480,6 +8485,36 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       state.uid = row.uid;
       try { root.App.save(); } catch (e) { }
     }
+    if (row && Array.isArray(row.remove_items) && row.remove_items.length) {
+      var removedNames = [];
+      row.remove_items.forEach(function (it) {
+        if (!it || !it.id) return;
+        var idx = state.phones.findIndex(function (p) {
+          return p && p.modelId === it.id && !p.sold && Number(p.storage) === Number(it.s);
+        });
+        if (idx >= 0) {
+          var ph = state.phones[idx];
+          var mm = (root.Engine.MODELS_BY_ID || {})[ph.modelId] || {};
+          removedNames.push(mm.name || it.id);
+          state.phones.splice(idx, 1);
+          if (state.mainPhoneId === ph.id) {
+            state.mainPhoneId = (state.phones[0] && state.phones[0].id) || null;
+          }
+        }
+      });
+      if (removedNames.length) {
+        try {
+          root.Engine.pushLog(state, {
+            text: 'Администратор удалил из инвентаря: ' + removedNames.join(', '),
+            tone: 'bad'
+          });
+        } catch (e) { }
+        try {
+          root.App.save();
+          if (root.App.render) root.App.render();
+        } catch (e) { }
+      }
+    }
     if (row && Number(row.admin_credit) > 0) {
       var credit = Math.round(Number(row.admin_credit) || 0);
       if (credit > 0) {
@@ -8511,6 +8546,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       main_storage: meta.storage,
       inventory: inventoryOf(state),
       admin_credit: 0,
+      remove_items: [],
       uid: state.uid,
       username: u.username || '',
       photo_url: u.photo || '',
@@ -8867,11 +8903,44 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     function showFound() {
       if (!found) { foundBox.innerHTML = ''; return; }
       var titles = badgeKeys(found.badge).map(function (k) { return BADGES[k].title; });
+      var inv = Array.isArray(found.inventory) ? found.inventory : [];
+      var invHTML = inv.length
+        ? '<div class="adm-inv">' + inv.map(function (x, i) {
+            return '<div class="adm-inv-row"><span>' + esc((x && (x.n || x.id)) || 'Телефон') + ' ' + (x ? x.s : '') + ' ГБ</span>' +
+              '<button class="adm-inv-del" data-i="' + i + '">Удалить</button></div>';
+          }).join('') + '</div>'
+        : '<div class="adm-inv-empty">Инвентарь пуст</div>';
       foundBox.innerHTML = '<div class="adm-found">' +
         '<b>' + esc(found.name || 'Игрок') + '</b><br>' +
         '<span class="muted">' + (found.username ? '@' + esc(found.username) + ' · ' : '') + esc(found.uid || '—') + ' · капитал ' + money(found.capital) + '</span><br>' +
         '<span class="muted">Значки: ' + (titles.length ? esc(titles.join(', ')) : 'нет') + '</span>' +
+        invHTML +
         '</div>';
+      foundBox.querySelectorAll('.adm-inv-del').forEach(function (b) {
+        b.onclick = async function () {
+          var i = parseInt(b.dataset.i, 10);
+          var item = inv[i];
+          if (!item) return;
+          var rem = Array.isArray(found.remove_items) ? found.remove_items.slice() : [];
+          rem.push({ id: item.id, s: item.s });
+          b.disabled = true;
+          try {
+            var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
+              method: 'PATCH',
+              headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
+              body: JSON.stringify({ remove_items: rem })
+            });
+            if (!r.ok) throw new Error('http ' + r.status);
+            found.remove_items = rem;
+            found.inventory.splice(i, 1);
+            showFound();
+            root.App.toast('Удалено. Игрок потеряет телефон при входе', 'good');
+          } catch (e) {
+            b.disabled = false;
+            root.App.toast('Не удалось удалить', 'bad');
+          }
+        };
+      });
     }
     inp.addEventListener('input', function () {
       inp.value = inp.value.toUpperCase();
