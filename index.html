@@ -5752,7 +5752,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
   var m = {
     id: 'pixel11pro_pink', brand: 'Google', name: 'Pixel 11 Pro Pink',
     tier: 4, base: 200000, storages: [512], pop: 0, quirks: {},
-    code: 'PIX11P', note: 'лимитированная розовая серия'
+    code: 'PIX11P', note: 'лимитированная розовая серия', limited: true
   };
   window.Engine.MODELS_BY_ID[m.id] = m;
 })();
@@ -7126,6 +7126,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     const out = [];
     const all = root.Engine.MODELS_BY_ID;
     for (const id in all) {
+      if (all[id].limited) continue;
       if (group.brands.indexOf(all[id].brand) >= 0) out.push(all[id]);
     }
     return out;
@@ -7508,7 +7509,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
   function models() {
     const out = [];
     const all = root.Engine.MODELS_BY_ID;
-    for (const id in all) out.push(all[id]);
+    for (const id in all) { if (!all[id].limited) out.push(all[id]); }
     return out;
   }
 
@@ -8479,6 +8480,24 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       state.uid = row.uid;
       try { root.App.save(); } catch (e) { }
     }
+    if (row && Number(row.admin_credit) > 0) {
+      var credit = Math.round(Number(row.admin_credit) || 0);
+      if (credit > 0) {
+        state.balance = (state.balance || 0) + credit;
+        try {
+          root.Engine.pushLog(state, {
+            text: 'Пополнение администратором: +' + new Intl.NumberFormat('ru-RU').format(credit) + ' ₽',
+            tone: 'good'
+          });
+        } catch (e) { }
+        try {
+          root.App.save();
+          if (root.App.renderHeader) root.App.renderHeader();
+          if (root.App.render) root.App.render();
+        } catch (e) { }
+        try { root.App.toast('Пополнение от администратора: +' + credit + ' ₽', 'good'); } catch (e) { }
+      }
+    }
     var meta = mainMeta(state);
     var payload = {
       tg_id: u.id,
@@ -8491,6 +8510,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       main_model: meta.id,
       main_storage: meta.storage,
       inventory: inventoryOf(state),
+      admin_credit: 0,
       uid: state.uid,
       username: u.username || '',
       photo_url: u.photo || '',
@@ -8819,6 +8839,9 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       '<input id="adm-uid" type="text" placeholder="#BBB111BBB" maxlength="10" autocomplete="off" spellcheck="false"></div>' +
       '<div class="btn-row"><button class="btn" id="adm-find" style="flex:1">Найти игрока</button></div>' +
       '<div id="adm-found"></div>' +
+      '<div class="field mt12"><label>Начислить на баланс, ₽</label>' +
+      '<input id="adm-sum" type="number" min="1" inputmode="numeric" placeholder="1000"></div>' +
+      '<div class="btn-row"><button class="btn" id="adm-credit" style="flex:1">Начислить</button></div>' +
       '<div class="adm-badges" id="adm-badges">' +
       '<button class="adm-badge" data-adm="none">Без значка</button>' +
       keys.map(function (k) {
@@ -8910,6 +8933,31 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       }
       btn.disabled = false;
       btn.textContent = 'Выдать';
+    };
+    document.getElementById('adm-credit').onclick = async function () {
+      if (!found) { root.App.toast('Сначала найди игрока по UID', 'bad'); return; }
+      var amount = parseInt(document.getElementById('adm-sum').value, 10);
+      if (!isFinite(amount) || amount <= 0) { root.App.toast('Введи сумму больше нуля', 'bad'); return; }
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Начисляем…';
+      try {
+        var cur = Number(found.admin_credit || 0);
+        var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
+          method: 'PATCH',
+          headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
+          body: JSON.stringify({ admin_credit: cur + amount })
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+        found.admin_credit = cur + amount;
+        showFound();
+        document.getElementById('adm-sum').value = '';
+        root.App.toast('Начислено ' + amount + ' ₽. Игрок получит при следующем входе', 'good');
+      } catch (e) {
+        root.App.toast('Не удалось начислить', 'bad');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Начислить';
     };
     mark();
   }
