@@ -8923,16 +8923,17 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
           if (!item) return;
           var rem = Array.isArray(found.remove_items) ? found.remove_items.slice() : [];
           rem.push({ id: item.id, s: item.s });
+          var newInv = inv.filter(function (_, j) { return j !== i; });
           b.disabled = true;
           try {
             var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
               method: 'PATCH',
               headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
-              body: JSON.stringify({ remove_items: rem })
+              body: JSON.stringify({ remove_items: rem, inventory: newInv })
             });
             if (!r.ok) throw new Error('http ' + r.status);
             found.remove_items = rem;
-            found.inventory.splice(i, 1);
+            found.inventory = newInv;
             showFound();
             root.App.toast('Удалено. Игрок потеряет телефон при входе', 'good');
           } catch (e) {
