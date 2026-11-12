@@ -8533,6 +8533,23 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
   async function sync(state) {
     var u = tgUser();
     if (!u || !state || !state.stats) return null;
+    if (!state.tgOwner) state.tgOwner = u.id;
+    if (String(state.tgOwner) !== String(u.id)) {
+      var freshState = null;
+      try {
+        var rr = await fetchUser(u.id);
+        if (rr && rr.game_save && rr.game_save.version === 1 && String(rr.game_save.tgOwner || '') === String(u.id)) {
+          freshState = rr.game_save;
+        }
+      } catch (e) { }
+      if (!freshState) freshState = root.Engine.newGame(state.mode || 'casual');
+      freshState.tgOwner = u.id;
+      Object.keys(state).forEach(function (k) { delete state[k]; });
+      Object.keys(freshState).forEach(function (k) { state[k] = freshState[k]; });
+      delete state.uid;
+      ensureUid(state);
+      try { root.App.save(); if (root.App.render) root.App.render(); } catch (e) { }
+    }
     ensureUid(state);
     var row = null;
     try {
@@ -9359,6 +9376,7 @@ const App = {
         if (needCloud) {
           let row = null;
           try { row = await root.Leaderboard.cloudLoad(); } catch (e) { }
+          if (row && row.game_save && row.game_save.tgOwner && String(row.game_save.tgOwner) !== String(u.id)) row.game_save = null;
           if (row && row.banned) {
             this.state = (row.game_save && row.game_save.version === 1) ? row.game_save : E.newGame('casual');
             if (this.state) this.state.tgOwner = u.id;
