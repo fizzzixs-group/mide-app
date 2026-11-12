@@ -3694,6 +3694,18 @@ html.glass-on .switch.on::before{ animation-name:swWaveBlue; }
 .adm-edit-row{ display:flex; gap:6px; margin-top:7px; align-items:center; }
 .adm-edit-row .f-select{ flex:1; min-width:0; }
 
+
+/* бан */
+#ban-overlay{ position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center; padding:26px; background:#0b0d12; color:#fff; text-align:center; }
+.ban-box{ max-width:320px; }
+.ban-ico{ width:64px; height:64px; margin:0 auto 16px; border-radius:50%; background:rgba(229,72,77,.15); border:2px solid rgba(229,72,77,.6); color:#ff6b70; font-size:34px; font-weight:900; display:grid; place-items:center; }
+.ban-box h2{ font-size:19px; margin:0 0 8px; }
+.ban-box p{ font-size:13px; color:#a7b0bd; margin:0 0 12px; }
+.ban-box a{ display:inline-block; color:#0aa2f5; font-weight:800; font-size:15px; text-decoration:none; }
+.adm-ban-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }
+.adm-banned{ color:#e5484d; font-weight:800; font-size:11.5px; }
+.adm-chip.danger{ color:#e5484d; border-color:rgba(229,72,77,.4); background:rgba(229,72,77,.08); }
+
 </style>
 <script>try{if(localStorage.getItem('mide.glass')==='on')document.documentElement.classList.add('glass-on');}catch(e){}</script>
 <script>window.__mideErr='';window.addEventListener('error',function(e){try{window.__mideErr=(e.message||'')+(e.lineno?' @'+e.lineno:'');}catch(x){}});</script>
@@ -8467,10 +8479,10 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     return isNaN(n) ? 0 : n;
   }
   async function fetchTop() {
-    return fetchJson(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals,uid,badge,best_deal,main_phone,created_at,username,photo_url&order=capital.desc&limit=50');
+    return fetchJson(SB_URL + '/rest/v1/scores?select=tg_id,name,capital,profit,deals,uid,badge,best_deal,main_phone,created_at,username,photo_url&banned=eq.false&order=capital.desc&limit=50');
   }
   async function countRows(filter) {
-    var r = await fetch(SB_URL + '/rest/v1/scores?select=tg_id&limit=1' + (filter || ''), {
+    var r = await fetch(SB_URL + '/rest/v1/scores?select=tg_id&limit=1&banned=eq.false' + (filter || ''), {
       headers: Object.assign({ 'Prefer': 'count=exact' }, HDR),
       cache: 'no-store'
     });
@@ -8486,6 +8498,38 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     return (a && a[0]) || null;
   }
 
+  async function cloudLoad() {
+    var u = tgUser();
+    if (!u) return null;
+    try {
+      var row = await fetchUser(u.id);
+      return row || null;
+    } catch (e) { return null; }
+  }
+
+  function showBan(reason) {
+    var el = document.getElementById('ban-overlay');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'ban-overlay';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<div class="ban-box">' +
+      '<div class="ban-ico">!</div>' +
+      '<h2>Ваш аккаунт заблокирован</h2>' +
+      '<p>Для причины обратитесь к администратору</p>' +
+      '<a href="https://t.me/folavy" target="_blank" rel="noopener noreferrer">@folavy</a>' +
+      '</div>';
+    el.style.display = 'flex';
+    document.documentElement.classList.add('banned');
+  }
+
+  function hideBan() {
+    var el = document.getElementById('ban-overlay');
+    if (el) el.style.display = 'none';
+    document.documentElement.classList.remove('banned');
+  }
+
   async function sync(state) {
     var u = tgUser();
     if (!u || !state || !state.stats) return null;
@@ -8498,6 +8542,8 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       state.uid = row.uid;
       try { root.App.save(); } catch (e) { }
     }
+    if (row && row.banned) { showBan(row.ban_reason); return row; }
+    hideBan();
     if (row && Array.isArray(row.remove_items) && row.remove_items.length) {
       var removedNames = [];
       row.remove_items.forEach(function (it) {
@@ -8591,6 +8637,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       inventory: inventoryOf(state),
       admin_credit: 0,
       admin_edits: [],
+      game_save: (Date.now() - (cache.lastSaveAt || 0) > 30000 ? state : undefined),
       remove_items: [],
       uid: state.uid,
       username: u.username || '',
@@ -8623,6 +8670,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     } catch (e) {
       row = row || payload;
     }
+    if (payload.game_save) cache.lastSaveAt = Date.now();
     cache.my = row;
     return row;
   }
@@ -8963,6 +9011,8 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
         '<b>' + esc(found.name || 'Игрок') + '</b><br>' +
         '<span class="muted">' + (found.username ? '@' + esc(found.username) + ' · ' : '') + esc(found.uid || '—') + ' · капитал ' + money(found.capital) + '</span><br>' +
         '<span class="muted">Значки: ' + (titles.length ? esc(titles.join(', ')) : 'нет') + '</span>' +
+        '<div class="adm-ban-row"><span class="' + (found.banned ? 'adm-banned' : 'muted') + '">' + (found.banned ? 'Забанен' : 'Не забанен') + '</span>' +
+        '<button class="adm-chip ' + (found.banned ? 'ghost' : 'danger') + '" id="adm-ban">' + (found.banned ? 'Разбанить' : 'Забанить') + '</button></div>' +
         invHTML +
         '</div>';
       foundBox.querySelectorAll('.adm-inv-del').forEach(function (b) {
@@ -9069,6 +9119,26 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       }
     }
 
+    var banBtn = document.getElementById('adm-ban');
+    if (banBtn) banBtn.onclick = async function () {
+      if (!found) return;
+      var next = !found.banned;
+      banBtn.disabled = true;
+      try {
+        var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
+          method: 'PATCH',
+          headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
+          body: JSON.stringify({ banned: next })
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+        found.banned = next;
+        showFound();
+        root.App.toast(next ? 'Игрок забанен' : 'Игрок разбанен', next ? 'bad' : 'good');
+      } catch (e) {
+        banBtn.disabled = false;
+        root.App.toast('Не удалось изменить бан', 'bad');
+      }
+    };
     inp.addEventListener('input', function () {
       inp.value = inp.value.toUpperCase();
     });
@@ -9174,6 +9244,9 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     submit: function (state) { return sync(state); },
     user: tgUser,
     capital: capital,
+    cloudLoad: cloudLoad,
+    showBan: showBan,
+    hideBan: hideBan,
     ensureUid: ensureUid,
     applyTgProfile: applyTgProfile,
     profileBadgeHTML: profileBadgeHTML,
@@ -9260,7 +9333,7 @@ const App = {
     cur: null,
     _saveT: null,
 
-    init() {
+    async init() {
       try {
         const k = localStorage.getItem(KEY_KEY) || localStorage.getItem(OLD_KEY_KEY);
         if (k) root.AI.setKey(k);
@@ -9274,8 +9347,31 @@ const App = {
         }
       } catch (e) { }
       this.load();
-      const fresh = !this.state;
+      const u = root.Leaderboard && root.Leaderboard.user ? root.Leaderboard.user() : null;
+      if (u) {
+        let needCloud = false;
+        if (this.state && !this.state.tgOwner) {
+          this.state.tgOwner = u.id;
+          this.save();
+        } else if (!this.state || String(this.state.tgOwner) !== String(u.id)) {
+          needCloud = true;
+        }
+        if (needCloud) {
+          let row = null;
+          try { row = await root.Leaderboard.cloudLoad(); } catch (e) { }
+          if (row && row.banned) {
+            this.state = (row.game_save && row.game_save.version === 1) ? row.game_save : E.newGame('casual');
+            if (this.state) this.state.tgOwner = u.id;
+            if (root.Leaderboard && root.Leaderboard.showBan) root.Leaderboard.showBan(row.ban_reason);
+          } else {
+            this.state = (row && row.game_save && row.game_save.version === 1) ? row.game_save : E.newGame('casual');
+            if (this.state) this.state.tgOwner = u.id;
+          }
+          this.save();
+        }
+      }
       if (!this.state) this.state = E.newGame('casual');
+      const fresh = !this.state.mode || !this.state.tutorialDone;
       if (root.Leaderboard) {
         root.Leaderboard.ensureUid(this.state);
         root.Leaderboard.applyTgProfile(this.state);
