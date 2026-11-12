@@ -8978,6 +8978,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     var selected = [];
     var found = null;
     var editorIndex = null;
+    var adminInv = [];
 
     root.App.modal(
       '<h3>Админ-панель</h3>' +
@@ -9015,11 +9016,12 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       if (!found) { foundBox.innerHTML = ''; return; }
       var titles = badgeKeys(found.badge).map(function (k) { return BADGES[k].title; });
       var inv = Array.isArray(found.inventory) ? found.inventory : [];
+      adminInv = inv; window.__mideInv = inv;
       var invHTML = inv.length
         ? '<div class="adm-inv">' + inv.map(function (x, i) {
             return '<div class="adm-inv-row"><span>' + esc((x && (x.n || x.id)) || 'Телефон') + ' ' + (x ? x.s : '') + ' ГБ</span>' +
               '<span class="adm-inv-actions">' +
-              '<button class="adm-inv-edit" data-i="' + i + '">Изменить</button>' +
+              '<button class="adm-inv-edit" data-i="' + i + '" onclick="window.__mideEditOpen&&window.__mideEditOpen(' + i + ')">Изменить</button>' +
               '<button class="adm-inv-del" data-i="' + i + '">Удалить</button></span></div>';
           }).join('') + '</div>'
         : '<div class="adm-inv-empty">Инвентарь пуст</div>';
@@ -9029,7 +9031,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
         '<span class="muted">Значки: ' + (titles.length ? esc(titles.join(', ')) : 'нет') + '</span>' +
         (editorIndex != null && inv[editorIndex] ? editorHTML(inv[editorIndex]) : '') +
         '<div class="adm-ban-row"><span class="' + (found.banned ? 'adm-banned' : 'muted') + '">' + (found.banned ? 'Забанен' : 'Не забанен') + '</span>' +
-        '<button class="adm-chip ' + (found.banned ? 'ghost' : 'danger') + '" id="adm-ban">' + (found.banned ? 'Разбанить' : 'Забанить') + '</button></div>' +
+        '<button class="adm-chip ' + (found.banned ? 'ghost' : 'danger') + '" id="adm-ban" onclick="window.__mideBan&&window.__mideBan()">' + (found.banned ? 'Разбанить' : 'Забанить') + '</button></div>' +
         invHTML +
         '</div>';
       foundBox.querySelectorAll('.adm-inv-del').forEach(function (b) {
@@ -9059,59 +9061,55 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
           }
         };
       });
-      foundBox.querySelectorAll('.adm-inv-edit').forEach(function (b) {
-        b.onclick = function () {
-          var i = parseInt(b.dataset.i, 10);
-          editorIndex = (editorIndex === i) ? null : i;
-          showFound();
-        };
-      });
-      var banBtn = foundBox.querySelector('#adm-ban');
-      if (banBtn) banBtn.onclick = async function () {
-        if (!found) return;
-        var next = !found.banned;
-        banBtn.disabled = true;
-        try {
-          var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
-            method: 'PATCH',
-            headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
-            body: JSON.stringify({ banned: next })
-          });
-          if (!r.ok) throw new Error('http ' + r.status);
-          found.banned = next;
-          showFound();
-          root.App.toast(next ? 'Игрок забанен' : 'Игрок разбанен', next ? 'bad' : 'good');
-        } catch (e) {
-          banBtn.disabled = false;
-          root.App.toast('Не удалось изменить бан', 'bad');
-        }
-      };
-      foundBox.querySelectorAll('[data-adm-edit]').forEach(function (b) {
-        b.onclick = function () {
-          var item = inv[editorIndex];
-          if (!item) return;
-          var act = b.getAttribute('data-adm-edit');
-          if (act === 'close') { editorIndex = null; showFound(); return; }
-          var op = { id: item.id, s: item.s };
-          if (act === 'brick0') { op.type = 'brick'; op.value = false; }
-          else if (act === 'brick1') { op.type = 'brick'; op.value = true; }
-          else if (act === 'ideal') { op.type = 'ideal'; }
-          else if (act === 'clear') { op.type = 'clear'; }
-          else if (act === 'adddef') {
-            var sel = document.getElementById('adm-defect');
-            if (!sel || !sel.value) return;
-            op.type = 'add_defect'; op.key = sel.value;
-          } else if (act === 'os') {
-            var osSel = document.getElementById('adm-os');
-            if (!osSel) return;
-            var os = ((root.Engine && root.Engine.OS_ALL) || []).filter(function (o) { return o.id === osSel.value; })[0];
-            if (!os) return;
-            op.type = 'os'; op.os = { name: os.name, a: os.a || 0 };
-          }
-          queueEdit(op);
-        };
-      });
     }
+
+    window.__mideEditOpen = function (i) {
+      editorIndex = (editorIndex === i) ? null : i;
+      showFound();
+    };
+
+    window.__mideBan = async function () {
+      if (!found) return;
+      var next = !found.banned;
+      found.banned = next;
+      showFound();
+      try {
+        var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
+          method: 'PATCH',
+          headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
+          body: JSON.stringify({ banned: next })
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+        root.App.toast(next ? 'Игрок забанен' : 'Игрок разбанен', next ? 'bad' : 'good');
+      } catch (e) {
+        found.banned = !next;
+        showFound();
+        root.App.toast('Не удалось изменить бан', 'bad');
+      }
+    };
+
+    window.__mideEdit = function (act) {
+      var item = adminInv[editorIndex];
+      if (!item) return;
+      if (act === 'close') { editorIndex = null; showFound(); return; }
+      var op = { id: item.id, s: item.s };
+      if (act === 'brick0') { op.type = 'brick'; op.value = false; }
+      else if (act === 'brick1') { op.type = 'brick'; op.value = true; }
+      else if (act === 'ideal') { op.type = 'ideal'; }
+      else if (act === 'clear') { op.type = 'clear'; }
+      else if (act === 'adddef') {
+        var sel = document.getElementById('adm-defect');
+        if (!sel || !sel.value) return;
+        op.type = 'add_defect'; op.key = sel.value;
+      } else if (act === 'os') {
+        var osSel = document.getElementById('adm-os');
+        if (!osSel) return;
+        var os = ((root.Engine && root.Engine.OS_ALL) || []).filter(function (o) { return o.id === osSel.value; })[0];
+        if (!os) return;
+        op.type = 'os'; op.os = { name: os.name, a: os.a || 0 };
+      }
+      queueEdit(op);
+    };
 
     function editorHTML(item) {
       var defs = (root.DATA && root.DATA.DEFECTS) || {};
@@ -9125,16 +9123,16 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
       return '<div class="adm-edit">' +
         '<div class="adm-edit-title">' + esc(item.n || item.id) + ' ' + item.s + ' ГБ</div>' +
         '<div class="adm-edit-btns">' +
-        '<button class="adm-chip" data-adm-edit="brick0">Снять кирпич</button>' +
-        '<button class="adm-chip" data-adm-edit="brick1">Поставить кирпич</button>' +
-        '<button class="adm-chip" data-adm-edit="ideal">Идеальное состояние</button>' +
-        '<button class="adm-chip" data-adm-edit="clear">Убрать все дефекты</button>' +
+        '<button class="adm-chip" data-adm-edit="brick0" onclick="window.__mideEdit&&window.__mideEdit(&quot;brick0&quot;)">Снять кирпич</button>' +
+        '<button class="adm-chip" data-adm-edit="brick1" onclick="window.__mideEdit&&window.__mideEdit(&quot;brick1&quot;)">Поставить кирпич</button>' +
+        '<button class="adm-chip" data-adm-edit="ideal" onclick="window.__mideEdit&&window.__mideEdit(&quot;ideal&quot;)">Идеальное состояние</button>' +
+        '<button class="adm-chip" data-adm-edit="clear" onclick="window.__mideEdit&&window.__mideEdit(&quot;clear&quot;)">Убрать все дефекты</button>' +
         '</div>' +
         '<div class="adm-edit-row"><select id="adm-defect" class="f-select">' + defOpts + '</select>' +
-        '<button class="adm-chip" data-adm-edit="adddef">Добавить дефект</button></div>' +
+        '<button class="adm-chip" data-adm-edit="adddef" onclick="window.__mideEdit&&window.__mideEdit(&quot;adddef&quot;)">Добавить дефект</button></div>' +
         '<div class="adm-edit-row"><select id="adm-os" class="f-select">' + osOpts + '</select>' +
-        '<button class="adm-chip" data-adm-edit="os">Поставить ОС</button></div>' +
-        '<button class="adm-chip ghost" data-adm-edit="close">Готово</button>' +
+        '<button class="adm-chip" data-adm-edit="os" onclick="window.__mideEdit&&window.__mideEdit(&quot;os&quot;)">Поставить ОС</button></div>' +
+        '<button class="adm-chip ghost" data-adm-edit="close" onclick="window.__mideEdit&&window.__mideEdit(&quot;close&quot;)">Готово</button>' +
         '</div>';
     }
 
