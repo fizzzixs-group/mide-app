@@ -10276,11 +10276,19 @@ const App = {
   }
   function removeTyping(n) { if (n && n.parentNode) n.remove(); }
 
+  function typingDelay(text) {
+    const len = (text || '').length;
+    return Math.max(700, Math.min(4500, 700 + len * 20));
+  }
+
   async function withTyping(fn) {
     const t = addTyping();
+    const started = Date.now();
     let res;
     try { res = await fn(); } catch (e) { res = null; }
-    await delay(220);
+    const txt = res && (typeof res === 'string' ? res : (res.text || res.content || ''));
+    const wait = typingDelay(txt) - (Date.now() - started);
+    if (wait > 0) await delay(wait);
     removeTyping(t);
     return res;
   }
