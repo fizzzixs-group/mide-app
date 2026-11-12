@@ -8556,7 +8556,6 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
         }
       });
       if (changed) {
-        try { root.Engine.pushLog(state, { text: 'Администратор изменил телефон в инвентаре', tone: 'bad' }); } catch (e) { }
         try { root.App.save(); if (root.App.render) root.App.render(); } catch (e) { }
       }
     }
