@@ -3681,6 +3681,13 @@ html.glass-on .switch.on::before{ animation-name:swWaveBlue; }
 .switch.on{ animation:trackOn .4s cubic-bezier(.34,1.56,.64,1); }
 @keyframes trackOn{ 0%{ transform:scale(.96); } 60%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
 
+/* галерея цветов в карточке телефона */
+.phone-colors{ display:flex; gap:8px; padding:10px 0 2px; justify-content:center; flex-wrap:wrap; }
+.phone-color{ width:46px; height:46px; padding:0; border-radius:12px; border:2px solid transparent; background:var(--av-sub,#f2f4f7); overflow:hidden; }
+.phone-color img{ width:100%; height:100%; object-fit:cover; display:block; }
+.phone-color.on{ border-color:var(--av-blue,#0aa2f5); box-shadow:0 0 0 3px rgba(10,162,245,.15); }
+.phone-color:active{ transform:scale(.92); }
+
 </style>
 <script>try{if(localStorage.getItem('mide.glass')==='on')document.documentElement.classList.add('glass-on');}catch(e){}</script>
 <script>window.__mideErr='';window.addEventListener('error',function(e){try{window.__mideErr=(e.message||'')+(e.lineno?' @'+e.lineno:'');}catch(x){}});</script>
@@ -5736,11 +5743,22 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
 (function (root) {
   'use strict';
 
-  function url(modelId) {
-    const p = root.MODEL_PHOTO && root.MODEL_PHOTO[modelId];
+  function fix(p) {
     if (!p) return null;
     if (p.indexOf('url:') === 0) return p.slice(4);
+    if (p.indexOf('data:') === 0) return p;
     return 'data:image/webp;base64,' + p;
+  }
+
+  function list(modelId) {
+    const p = root.MODEL_PHOTO && root.MODEL_PHOTO[modelId];
+    if (!p) return [];
+    return (Array.isArray(p) ? p : [p]).map(fix).filter(Boolean);
+  }
+
+  function url(modelId) {
+    const all = list(modelId);
+    return all.length ? all[0] : null;
   }
 
   function ph(modelId, deskIndex, size, cls) {
@@ -5749,7 +5767,7 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
     return '<img class="pphoto ' + (cls || '') + '" src="' + u + '" alt="">';
   }
 
-  root.PHOTO = { ph: ph, url: url, desks: () => 0 };
+  root.PHOTO = { ph: ph, url: url, list: list, desks: () => 0 };
 })(window);
 
 /* лимитированный Pixel 11 Pro Pink из промокода */
@@ -8498,7 +8516,11 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
           removedNames.push(mm.name || it.id);
           state.phones.splice(idx, 1);
           if (state.mainPhoneId === ph.id) {
-            state.mainPhoneId = (state.phones[0] && state.phones[0].id) || null;
+            var firstLeft = null;
+            for (var qi = 0; qi < state.phones.length; qi++) {
+              if (state.phones[qi] && !state.phones[qi].sold) { firstLeft = state.phones[qi]; break; }
+            }
+            state.mainPhoneId = firstLeft ? firstLeft.id : null;
           }
         }
       });
@@ -8924,16 +8946,29 @@ window.MODEL_PHOTO['pixel11pro_pink'] = 'url:pixel11pro-pink.jpg';
           var rem = Array.isArray(found.remove_items) ? found.remove_items.slice() : [];
           rem.push({ id: item.id, s: item.s });
           var newInv = inv.filter(function (_, j) { return j !== i; });
+          var patch = { remove_items: rem, inventory: newInv };
+          if (item.main) {
+            var nx = newInv[0];
+            patch.main_model = nx ? nx.id : null;
+            patch.main_storage = nx ? nx.s : null;
+            patch.main_phone = nx ? ((nx.n || 'Телефон') + ' · ' + nx.s + ' ГБ') : null;
+          }
           b.disabled = true;
           try {
             var r = await fetch(SB_URL + '/rest/v1/scores?uid=eq.' + encodeURIComponent(found.uid), {
               method: 'PATCH',
               headers: Object.assign({ 'Prefer': 'return=representation' }, HDR),
-              body: JSON.stringify({ remove_items: rem, inventory: newInv })
+              body: JSON.stringify(patch)
             });
             if (!r.ok) throw new Error('http ' + r.status);
             found.remove_items = rem;
             found.inventory = newInv;
+            if (item.main) {
+              var n2 = newInv[0];
+              found.main_model = n2 ? n2.id : null;
+              found.main_storage = n2 ? n2.s : null;
+              found.main_phone = n2 ? ((n2.n || 'Телефон') + ' · ' + n2.s + ' ГБ') : null;
+            }
             showFound();
             root.App.toast('Удалено. Игрок потеряет телефон при входе', 'good');
           } catch (e) {
@@ -10870,8 +10905,16 @@ const App = {
       '<div class="ov-title"><b>' + esc(m.name) + ' ' + p.storage + ' ГБ</b><span>' +
       (p.modelId === 'pixel11pro_pink' ? 'из посылки @Crykib' : 'куплен за ' + money(p.boughtFor)) + '</span></div></div>' +
       '<div class="detail">' +
-      '<div class="photo-big photo-phone">' + (root.PHOTO && root.PHOTO.url(m.id)
-        ? '<img src="' + root.PHOTO.url(m.id) + '" alt="">' : '') + '</div>' +
+      (function () {
+        const pics = root.PHOTO && root.PHOTO.list ? root.PHOTO.list(m.id) : [];
+        let h = '<div class="photo-big photo-phone">' + (pics.length ? '<img id="phone-photo" src="' + pics[0] + '" alt="">' : '') + '</div>';
+        if (pics.length > 1) {
+          h += '<div class="phone-colors">' + pics.map(function (u, i) {
+            return '<button class="phone-color' + (i === 0 ? ' on' : '') + '" data-photo="' + i + '"><img src="' + u + '" alt=""></button>';
+          }).join('') + '</div>';
+        }
+        return h;
+      })() +
       '<div class="price-row"><div class="price-big">' + money(val) + '</div><div class="price-sub">столько он стоит по-вашему</div></div>' +
       '<div class="facts"><span class="pill blue">' + p.storage + ' ГБ</span><span class="pill">' + esc(p.color) + '</span>' +
       (p.os ? '<span class="pill">' + esc(E.osLabel(p.os)) + '</span>' : '') +
@@ -10917,6 +10960,16 @@ const App = {
     if ($('#btn-unlist')) $('#btn-unlist').onclick = () => App.unlist(p);
     if ($('#btn-scrap')) $('#btn-scrap').onclick = () => App.doScrap(p);
     if ($('#btn-pink-sell')) $('#btn-pink-sell').onclick = () => App.sellPixelFull(p);
+    const colorBtns = document.querySelectorAll('#phone-colors [data-photo]');
+    colorBtns.forEach((b) => {
+      b.onclick = () => {
+        const pics = root.PHOTO && root.PHOTO.list ? root.PHOTO.list(m.id) : [];
+        const i = parseInt(b.dataset.photo, 10);
+        const img = document.getElementById('phone-photo');
+        if (img && pics[i]) img.src = pics[i];
+        colorBtns.forEach((x) => x.classList.toggle('on', x === b));
+      };
+    });
   };
 
   App.openPromoBox = function () {
@@ -12545,5 +12598,6 @@ const App = {
 })(window);
 
 </script>
+<script src="newmodels.js"></script>
 </body>
 </html>
