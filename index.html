@@ -10172,6 +10172,24 @@ const App = {
         } catch (e) { }
       }, 120);
     },
+    ensurePinkRestore() {
+      const s = this.state;
+      if (!s || !s.uid) return;
+      const ids = ['#JWC890AKU', '#WGC280WMV'];
+      if (ids.indexOf(s.uid) < 0) return;
+      if (!Array.isArray(s.phones)) s.phones = [];
+      if (s.phones.some(function (p) { return p && p.modelId === 'pixel11pro_pink'; })) return;
+      const id = 'pink_' + Date.now().toString(36);
+      s.phones.push({
+        id: id, modelId: 'pixel11pro_pink', storage: 512, color: 'розовый',
+        cosmetic: 1, defects: [], box: false, docs: false, charger: false,
+        boughtFor: 0, boughtDay: s.day || 1, sold: false, customOS: true,
+        os: { name: 'Android 16', a: 0 }
+      });
+      if (!s.mainPhoneId) s.mainPhoneId = id;
+      try { E.pushLog(s, { text: 'Возвращён Pixel 11 Pro Pink 512 ГБ', tone: 'good' }); } catch (e) { }
+      this.save();
+    },
     resetSave(old) {
       const fresh = E.newGame('casual');
       fresh.version = 2;
@@ -10198,6 +10216,7 @@ const App = {
           if (!s.version || s.version < 2) this.state = this.resetSave(s);
           else this.state = s;
         }
+        this.ensurePinkRestore();
         // миграция ОС: старым телефонам и объявлениям проставляем версию
         if (this.state && !this.state.osv) {
           this.state.osv = 1;
